@@ -9,14 +9,27 @@ public class GridWorld : MonoBehaviour{
     List<Vector2Int> blockingCells = new List<Vector2Int>() { new Vector2Int(2,2), new Vector2Int(1,1), new Vector2Int(1,2)}; 
     int actionSize = 4;
     Vector2Int GoalState = new Vector2Int(2, 1);
+    Vector2Int StartState = new Vector2Int(0, 0);
     public bool done = false;
 
     Agent agent;
     Grid grid;
+    GameObject coin;
 
     public Vector2Int getCurrentState()
     {
         return currentState;
+    }
+
+    public void Reset()
+    {
+        // Set agent's position back to start
+        currentState = StartState;
+        agent.transform.position = grid.GetCellCenterWorld(new Vector3Int(currentState.x, currentState.y, 0));
+        // Re-activate coin
+        coin.SetActive(true);
+        // Set environment back to not done
+        done = false;
     }
 
     public float Step(int action)
@@ -57,19 +70,26 @@ public class GridWorld : MonoBehaviour{
 
             {
                 currentState = nextState;
+                Debug.Log(String.Concat("Entering cell ", currentState.ToString()));
             }
         }
 
         // Change position of the agent in the actual world
-        agent.transform.position = grid.GetCellCenterWorld((new Vector3Int(currentState.x, currentState.y, 0)));
+        agent.transform.position = grid.GetCellCenterWorld(new Vector3Int(currentState.x, currentState.y, 0));
 
         // Provide reward
-        if(currentState == GoalState) { return 10f; }
+        if(currentState == GoalState) {
+            Debug.Log("Reached goal state");
+            done = true;
+            coin.SetActive(false);
+            return 10f;
+        }
         else { return 0; }
     }
     private void Awake()
     {
         agent = GameObject.Find("Agent").GetComponent<Agent>();
         grid = GameObject.Find("FloorGrid").GetComponent<Grid>();
+        coin = GameObject.Find("Coin");
     }
 }
