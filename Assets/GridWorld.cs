@@ -6,15 +6,17 @@ using UnityEngine;
 public class GridWorld : MonoBehaviour{
 
     Vector2Int currentState;
-    List<Vector2Int> blockingCells = new List<Vector2Int>() { new Vector2Int(2,2), new Vector2Int(1,1), new Vector2Int(1,2)}; 
+    List<Vector2Int> blockingCells = new List<Vector2Int>() { new Vector2Int(2,2), new Vector2Int(1,1), new Vector2Int(1,3)}; 
     int actionSize = 4;
-    Vector2Int GoalState = new Vector2Int(2, 1);
+    Vector2Int GoalState = new Vector2Int(4, 4);
     Vector2Int StartState = new Vector2Int(0, 0);
     public bool done = false;
 
     Agent agent;
     Grid grid;
     GameObject coin;
+    private int gridSizeX = 4;
+    private int gridSizeY = 4;
 
     public Vector2Int getCurrentState()
     {
@@ -64,9 +66,9 @@ public class GridWorld : MonoBehaviour{
             // Dirty check if we have a valid transition
             if ((!blockingCells.Contains(nextState)) && 
                 (-1 < nextState.x) && 
-                (nextState.x < 4) &&
+                (nextState.x < gridSizeX) &&
                 (-1 < nextState.y) && 
-                (nextState.y < 4))
+                (nextState.y < gridSizeY))
 
             {
                 currentState = nextState;
