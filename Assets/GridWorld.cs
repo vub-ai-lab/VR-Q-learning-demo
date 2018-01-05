@@ -6,7 +6,7 @@ using UnityEngine;
 public class GridWorld : MonoBehaviour{
 
     Vector2Int currentState;
-    List<Vector2Int> blockingCells = new List<Vector2Int>() { new Vector2Int(2,2), new Vector2Int(1,1), new Vector2Int(1,3)}; 
+	List<Vector2Int> blockingCells = new List<Vector2Int>() { new Vector2Int(2,2), new Vector2Int(1,1), new Vector2Int(3,3), new Vector2Int(1,3), new Vector2Int(3,1)}; 
     int actionSize = 4;
     Vector2Int GoalState = new Vector2Int(4, 4);
     Vector2Int StartState = new Vector2Int(0, 0);
@@ -15,8 +15,8 @@ public class GridWorld : MonoBehaviour{
     Agent agent;
     Grid grid;
     GameObject coin;
-    private int gridSizeX = 4;
-    private int gridSizeY = 4;
+    private int gridSizeX = 5;
+    private int gridSizeY = 5;
 
     public Vector2Int getCurrentState()
     {

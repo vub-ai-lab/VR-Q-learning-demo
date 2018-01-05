@@ -83,10 +83,10 @@ public class Agent : MonoBehaviour {
     void Start () {
         episodeCount = 0;
         stepCount = 0;
-        q_table = new float[4, 4][];
-        for(int x=0; x < 4; x++)
+        q_table = new float[5, 5][];
+        for(int x=0; x < 5; x++)
         {
-            for (int y = 0; y< 4; y++)
+            for (int y = 0; y< 5; y++)
             {
                 q_table[x, y] = new float[actionSize];
             }
