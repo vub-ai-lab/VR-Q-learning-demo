@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VRTK;
 
 [Serializable]
 public class GridWorld : MonoBehaviour{
@@ -11,6 +12,8 @@ public class GridWorld : MonoBehaviour{
     Vector2Int GoalState = new Vector2Int(4, 4);
     Vector2Int StartState = new Vector2Int(0, 0);
     public bool done = false;
+
+    public VRTK_DashTeleport teleporter;
 
     Agent agent;
     Grid grid;
@@ -27,9 +30,11 @@ public class GridWorld : MonoBehaviour{
     {
         // Set agent's position back to start
         currentState = StartState;
-        agent.transform.position = grid.GetCellCenterWorld(new Vector3Int(currentState.x, currentState.y, 0));
-        // Re-activate coin
-        coin.SetActive(true);
+        agent.DeActivateUIButtons();
+        teleporter.ForceTeleport(grid.GetCellCenterWorld(new Vector3Int(currentState.x, currentState.y, 0)));
+        agent.ActivateUIButtons();
+        // De-activate coin
+        coin.SetActive(false);
         // Set environment back to not done
         done = false;
     }
@@ -77,13 +82,16 @@ public class GridWorld : MonoBehaviour{
         }
 
         // Change position of the agent in the actual world
-        agent.transform.position = grid.GetCellCenterWorld(new Vector3Int(currentState.x, currentState.y, 0));
+        agent.DeActivateUIButtons();
+        Vector3 destination = grid.GetCellCenterWorld(new Vector3Int(currentState.x, currentState.y, 0));
+        teleporter.Teleport(agent.transform, destination);
+        agent.ActivateUIButtons();
 
         // Provide reward
         if(currentState == GoalState) {
             Debug.Log("Reached goal state");
             done = true;
-            coin.SetActive(false);
+            coin.SetActive(true);
             return 10f;
         }
         else { return 0; }
@@ -93,5 +101,6 @@ public class GridWorld : MonoBehaviour{
         agent = GameObject.Find("Agent").GetComponent<Agent>();
         grid = GameObject.Find("FloorGrid").GetComponent<Grid>();
         coin = GameObject.Find("Coin");
+        coin.SetActive(false);
     }
 }

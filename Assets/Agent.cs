@@ -8,11 +8,10 @@ using UnityEngine.UI;
 public class Agent : MonoBehaviour {
 
     float [ , ][] q_table;   // The matrix containing the q-value estimates.
-    int actionSize = 4; // Up, down, left, right
-
+    
     // Algorithm parameters
     public float learning_rate = 0.5f; // The rate at which to update the value estimates given a reward.
-    public float discount_factor = 0.99f; // Discount factor for calculating Q-target.
+    public float discount_factor = 1.0f; // Discount factor for calculating Q-target.
 
     // Misc 
     Vector2Int lastState;
@@ -28,8 +27,12 @@ public class Agent : MonoBehaviour {
     public Text Q_LeftEstimText;
     public Text Q_RightEstimText;
 
-    // Environment ref
+    Button[] buttons;
+
+    // Environment
     GridWorld env;
+    enum Action { Up, Down, Left, Right };
+    int actionSize = Enum.GetNames(typeof(Action)).Length;
 
     /// <summary>
     /// Gets the current Estimate of the State Value
@@ -72,18 +75,21 @@ public class Agent : MonoBehaviour {
         }
     }
 
-    private IEnumerator Waiter()
+    private IEnumerator WaitAndReset(float time)
     {
-        Debug.Log(Time.time);
-        yield return new WaitForSecondsRealtime(5);
-        Debug.Log(Time.time);
+        // Deactivate buttons
+        DeActivateUIButtons();
+        // Pause
+        yield return new WaitForSeconds(time);
+        // Reset environment
+        env.Reset();
+        // Activate buttons
+        ActivateUIButtons();
     }
 
     // Use this for initialization
     void Start () {
-        episodeCount = 0;
-        stepCount = 0;
-        q_table = new float[5, 5][];
+        
         for(int x=0; x < 5; x++)
         {
             for (int y = 0; y< 5; y++)
@@ -91,7 +97,7 @@ public class Agent : MonoBehaviour {
                 q_table[x, y] = new float[actionSize];
             }
         }
-        lastState = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z));
+        
         UpdateUI();
     }
 
@@ -105,10 +111,8 @@ public class Agent : MonoBehaviour {
         lastState = nextState;
         if (done)
         {
-            Debug.Log("Resetting environment");
-            StartCoroutine(Waiter());
-            env.Reset();
-            episodeCount = 0;
+            StartCoroutine(WaitAndReset(5));
+            episodeCount += 1;
             stepCount = 0;
         }
         else
@@ -146,16 +150,32 @@ public class Agent : MonoBehaviour {
     private void Awake()
     {
         env = GameObject.Find("GridWorld").GetComponent<GridWorld>();
+        episodeCount = 0;
+        stepCount = 0;
+        q_table = new float[5, 5][];
+        lastState = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z));
+        buttons = new Button[4] {GameObject.Find("ForwardButton").GetComponent<Button>(),
+                                 GameObject.Find("BackwardButton").GetComponent<Button>(),
+                                 GameObject.Find("LeftButton").GetComponent<Button>(),
+                                 GameObject.Find("RightButton").GetComponent<Button>()};
     }
 
     void UpdateUI()
     {
-        Q_UpEstimText.text = "Estimated Q-value: " + GetQval(lastState, 0);
-        Q_DownEstimText.text = "Estimated Q-value: " + GetQval(lastState, 1);
-        Q_LeftEstimText.text = "Estimated Q-value: " + GetQval(lastState, 2);
-        Q_RightEstimText.text = "Estimated Q-value: " + GetQval(lastState, 3);
+        Q_UpEstimText.text =  GetQval(lastState, 0).ToString();
+        Q_DownEstimText.text = GetQval(lastState, 1).ToString();
+        Q_LeftEstimText.text = GetQval(lastState, 2).ToString();
+        Q_RightEstimText.text = GetQval(lastState, 3).ToString();
+    }
 
-        //episodeCountText.text = "Episode: " + episodeCount.ToString();
-        //stepCountText.text = "Step: " + stepCount.ToString();
+
+    public void ActivateUIButtons() { SetInteractableButtons(true); }
+    public void DeActivateUIButtons() { SetInteractableButtons(false); }
+    private void SetInteractableButtons(bool value)
+    {
+        foreach(Button button in buttons)
+        {
+            button.interactable = true;
+        }
     }
 }
