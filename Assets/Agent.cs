@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Action = Enums.Action;
 
 [Serializable]
 public class Agent : MonoBehaviour {
@@ -15,43 +17,40 @@ public class Agent : MonoBehaviour {
 
     // Misc 
     Vector2Int lastState;
-    private int episodeCount;
-    private int stepCount;
 
     // UI vars
-    public Text episodeCountText;
-    public Text stepCountText;
-
     public Text Q_UpEstimText;
     public Text Q_DownEstimText;
     public Text Q_LeftEstimText;
     public Text Q_RightEstimText;
 
-    Button[] buttons;
+	private Text[] texts;
+    private Button[] buttons;
 
     // Environment
-    GridWorld env;
-    enum Action { Up, Down, Left, Right };
-    int actionSize = Enum.GetNames(typeof(Action)).Length;
+    private GridWorld env;
+	private int actionSize = Enum.GetNames(typeof(Action)).Length;
 
     /// <summary>
     /// Gets the current Estimate of the State Value
     /// </summary>
     /// <returns>The V-value of the current state.</returns>
-	public float GetStateValue()
+	public float GetCurrentStateValue()
     {
         return GetStateValue(lastState);
     }
 
     private float GetStateValue(Vector2Int state)
     {
+		// Since the human user performs the action selection, 
+		// we assume a uniform random policy
         float result = q_table[state.x, state.y].Average();
         return result;
     }
 
-    float GetQval(Vector2Int state, int action)
+    public float GetQval(Vector2Int state, Action action)
     {
-        return q_table[state.x, state.y][action];
+		return q_table[state.x, state.y][(int) action];
     }
 
     /// <summary>
@@ -60,19 +59,18 @@ public class Agent : MonoBehaviour {
     /// <param name="state">The environment state the experience happened in.</param>
     /// <param name="reward">The reward recieved by the agent from the environment for it's action.</param>
     /// <param name="done">Whether the episode has ended</param>
-    public void UpdateQTable(int action, Vector2Int state, float reward, bool done) {
-        if (action != -1)
+    public void UpdateQTable(Action action, Vector2Int state, float reward, bool done) 
+	{
+        if (done)
         {
-            if (done == true)
-            {
-                q_table[lastState.x, lastState.y][action] += learning_rate * (reward - q_table[lastState.x, lastState.y][action]);  
-            }
-            else
-            {
-                float q_max_nextState = q_table[state.x, state.y].Max();
-                q_table[lastState.x,lastState.y][action] += learning_rate * (reward + discount_factor * q_max_nextState - q_table[lastState.x,lastState.y][action]);
-            }
+			q_table[lastState.x, lastState.y][(int)action] += learning_rate * (reward - q_table[lastState.x, lastState.y][(int)action]);  
         }
+        else
+        {
+            float q_max_nextState = q_table[state.x, state.y].Max();
+			q_table[lastState.x,lastState.y][(int) action] += learning_rate * (reward + discount_factor * q_max_nextState - q_table[lastState.x,lastState.y][(int)action]);
+        }
+        
     }
 
     private IEnumerator WaitAndReset(float time)
@@ -87,21 +85,9 @@ public class Agent : MonoBehaviour {
         ActivateUIButtons();
     }
 
-    // Use this for initialization
-    void Start () {
-        
-        for(int x=0; x < 5; x++)
-        {
-            for (int y = 0; y< 5; y++)
-            {
-                q_table[x, y] = new float[actionSize];
-            }
-        }
-        
-        UpdateUI();
-    }
 
-    private void Act(int action)
+
+    private void Act(Action action)
     {
         float reward = env.Step(action);
         Debug.Log("Received reward: " + reward.ToString());
@@ -109,73 +95,92 @@ public class Agent : MonoBehaviour {
         bool done = env.done;
         UpdateQTable(action, nextState, reward, done);
         lastState = nextState;
-        if (done)
-        {
-            StartCoroutine(WaitAndReset(5));
-            episodeCount += 1;
-            stepCount = 0;
-        }
-        else
-        {
-            stepCount += 1;
-        }
         UpdateUI();
-
     }
 
     public void MoveForward()
     {
-        Act(0);
+		Act(Action.up);
 
     }
 
     public void MoveBackward()
     {
-        Act(1);
+        Act(Action.down);
 
     }
 
     public void MoveLeft()
     {
-        Act(2);
+		Act(Action.left);
 
     }
 
     public void MoveRight()
     {
-        Act(3);
+		Act(Action.right);
 
     }
 
-    private void Awake()
+    void Awake()
     {
         env = GameObject.Find("GridWorld").GetComponent<GridWorld>();
-        episodeCount = 0;
-        stepCount = 0;
-        q_table = new float[5, 5][];
-        lastState = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z));
-        buttons = new Button[4] {GameObject.Find("ForwardButton").GetComponent<Button>(),
+		q_table = new float[env.gridSizeX, env.gridSizeY][];
+		lastState = env.getCurrentState();
+		buttons = new Button[4] {GameObject.Find("ForwardButton").GetComponent<Button>(),
                                  GameObject.Find("BackwardButton").GetComponent<Button>(),
                                  GameObject.Find("LeftButton").GetComponent<Button>(),
                                  GameObject.Find("RightButton").GetComponent<Button>()};
+		texts = new Text[4]{ Q_UpEstimText, Q_DownEstimText, Q_LeftEstimText, Q_RightEstimText };
+		ClearUI ();
     }
+		
+	void Start () {
+		for(int x=0; x < env.gridSizeX; x++)
+		{
+			for (int y = 0; y< env.gridSizeY; y++)
+			{
+				q_table[x, y] = new float[4];
+			}
+		}
+		UpdateUI();
+	}
 
-    void UpdateUI()
+	/// <summary>
+	/// Updates the UI.
+	/// This function will activate the necessay UI elements, 
+	/// depending on the available actions in the current state.
+	/// </summary>
+    public void UpdateUI()
     {
-        Q_UpEstimText.text =  GetQval(lastState, 0).ToString();
-        Q_DownEstimText.text = GetQval(lastState, 1).ToString();
-        Q_LeftEstimText.text = GetQval(lastState, 2).ToString();
-        Q_RightEstimText.text = GetQval(lastState, 3).ToString();
+		// get available actions
+		List<Action> actions = env.getActions(lastState);
+		// set corresponding button active
+		// set corresponding text active and update its value
+		foreach(Action action in actions){
+			buttons [(int) action].gameObject.SetActive(true);
+			texts [(int) action].enabled = true;
+			texts[(int) action].text = GetQval(lastState, action).ToString();
+		}
     }
 
-
+	public void ClearUI()
+	{
+		foreach (Button button in buttons) {
+			button.gameObject.SetActive(false);
+		}
+		foreach (Text text in texts) {
+			text.enabled = false;
+		}
+	}
+		
     public void ActivateUIButtons() { SetInteractableButtons(true); }
     public void DeActivateUIButtons() { SetInteractableButtons(false); }
     private void SetInteractableButtons(bool value)
     {
         foreach(Button button in buttons)
         {
-            button.interactable = true;
+            button.interactable = value;
         }
     }
 }
