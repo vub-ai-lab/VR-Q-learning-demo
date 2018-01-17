@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using VRTK;
@@ -7,41 +8,65 @@ using Action = Enums.Action;
 [Serializable]
 public class GridWorld : MonoBehaviour{
 
+	class Node{
+		private Vector2Int position;
+		private Dictionary<Action,Node> actionDict;
+
+		public Node(int x, int y){
+			position = new Vector2Int(x,y);
+			actionDict = new Dictionary<Action, Node>();
+		}
+
+		public Vector2Int getPosition(){
+			return position;
+		}
+
+		public List<Action> getActions(){
+			return new List<Action>(actionDict.Keys);
+		}
+
+		public void addAction(Action action, Node neighbor){
+			actionDict.Add (action, neighbor);
+		}
+
+		public Node getNeighbor(Action action){
+			return actionDict [action];
+		}
+
+		public bool hasAction(Action a){
+			return actionDict.ContainsKey (a);
+		}
+	}
+
 	//Object vars
+	public int gridSizeX = 6;
+	public int gridSizeY = 6;
+    private Node currentState;
+	private Node  GoalState;
+	private Node StartState;
 
-	public int gridSizeX = 5;
-	public int gridSizeY = 5;
-    private Vector2Int currentState;
-	private Vector2Int GoalState = new Vector2Int(4, 4);
-	private Vector2Int StartState = new Vector2Int(0, 0);
-
-	private List<Vector2Int> blockingCells = new List<Vector2Int>() { new Vector2Int(2,2), new Vector2Int(1,1), new Vector2Int(3,3), new Vector2Int(1,3), new Vector2Int(3,1)}; // Cells of the grid we cannot visit (walls)
-    
-    public bool done = false;
-	private Dictionary<Vector2Int,List<Action> > actionMap = new Dictionary<Vector2Int, List<Action> >(); // containing special cases where only a subset of actions is available
+    private bool done = false;
 
     public VRTK_DashTeleport teleporter;
-
-    private Agent agent;
-    private Grid grid;
-    private GameObject coin;
+	public Agent agent;
+    public Grid grid;
+    public GameObject coin;
     
 	// Object methods
 
     public Vector2Int getCurrentState()
     {
-        return currentState;
+		return currentState.getPosition();
     }
 
     public void Reset()
     {
         // Set agent's position back to start
         currentState = StartState;
-        agent.DeActivateUIButtons();
-		teleporter.ForceTeleport(grid.GetCellCenterWorld(new Vector3Int(currentState.x, currentState.y, 0)));
-        agent.ActivateUIButtons();
-        // De-activate coin
-        coin.SetActive(false);
+		Vector2Int pos = currentState.getPosition();
+		teleporter.ForceTeleport(grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0)));
+		agent.learning = true;
+		agent.lastState = pos;
         // Set environment back to not done
         done = false;
     }
@@ -55,19 +80,12 @@ public class GridWorld : MonoBehaviour{
     {
 		if (validAction(action, currentState)) 
 		{
-			Vector2Int nextState = getNextState (currentState, action);
+			currentState = getNextState(currentState, action);
+			Debug.Log (String.Concat ("Entering cell ", currentState.getPosition().ToString()));
 
-			// Dirty check if we have a valid transition
-			if ((!blockingCells.Contains(nextState)) &&
-			             (-1 < nextState.x) &&
-			             (nextState.x < gridSizeX) &&
-			             (-1 < nextState.y) &&
-			             (nextState.y < gridSizeY)) {
-				currentState = nextState;
-				Debug.Log (String.Concat ("Entering cell ", currentState.ToString ()));
-				// Change position of the agent in the actual world
-				moveAgentInGameWorld();
-			}
+			// Change position of the agent in the VR world
+			moveAgentInGameWorld();
+
 			// Provide reward
 			if (currentState == GoalState) {
 				Debug.Log ("Reached goal state");
@@ -87,55 +105,36 @@ public class GridWorld : MonoBehaviour{
 	}
 
 	/// <summary>
-	/// Get the actions for the given state.
+	/// Get the actions for the current state.
 	/// </summary>
 	/// <returns>List of the available actions.</returns>
-	/// <param name="state">State</param>
-	public List<Action> getActions(Vector2Int state)
+	public List<Action> getActions()
 	{
-		if (actionMap.ContainsKey (state)) {
-			return actionMap [state];
-		} else {
-				return new List<Action> (){ Action.up, Action.down, Action.left, Action.right };
-		}
+		return currentState.getActions ();
+	}
 
+	public bool isTerminal(){
+		return done;
 	}
 		
-	private Vector2Int getNextState(Vector2Int state, Action action){
-		// In which direction will we move?
-		Vector2Int stepDirection;
-		switch (action)
-		{
-		case Action.up:
-			stepDirection = Vector2Int.up;
-			break;
-		case Action.down:
-			stepDirection = Vector2Int.down;
-			break;
-		case Action.left:
-			stepDirection = Vector2Int.left;
-			break;
-		case Action.right:
-			stepDirection = Vector2Int.right;
-			break;
-		default:
-			// Nothing happens
-			stepDirection = Vector2Int.zero;
-			break;
-		}
-
-		Vector2Int nextState = currentState + stepDirection;
-		return nextState;
+	private Node getNextState(Node state, Action action){
+		return state.getNeighbor (action);
 	}
 
 	private void moveAgentInGameWorld(){
-		agent.ClearUI ();
-		Vector3 destination = grid.GetCellCenterWorld(new Vector3Int(currentState.x, currentState.y, 0));
+		Vector2Int pos = currentState.getPosition ();
+		Vector3 destination = grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
 		teleporter.Teleport(agent.transform, destination,null,true);
 		if (currentState == GoalState) {
-			coin.SetActive (true);
+			StartCoroutine (ShowCoinTemporarily());
 		}
+	}
 
+	private IEnumerator ShowCoinTemporarily (){
+		yield return new WaitForSeconds (0.1f);
+		coin.SetActive (true);
+		yield return new WaitForSeconds (2f);
+		coin.SetActive (false);
 	}
 		
 	/// <summary>
@@ -144,38 +143,97 @@ public class GridWorld : MonoBehaviour{
 	/// <returns><c>true</c>, if action is valid, <c>false</c> otherwise.</returns>
 	/// <param name="action">Action.</param>
 	/// <param name="state">State.</param>
-	private bool validAction(Action action, Vector2Int state)
+	private bool validAction(Action action, Node state)
 	{
-		if (actionMap.ContainsKey(state)) {
-			return actionMap[state].Contains(action);
-		} 
-		else {
-			return true;
-		}
+		return state.hasAction (action);
 	}
 
-	private void fillActionMap(){
-		actionMap.Add (StartState, new List<Action> (){ Action.up, Action.right });
-		actionMap.Add (GoalState, new List<Action> (){ Action.down, Action.left });
-		actionMap.Add (new Vector2Int (0, 1), new List<Action> (){ Action.up, Action.down });
+	private void makeGraph(){
+		// make nodes
+		Node node00 = new Node(0,0);
+		Node node03 = new Node(0,3);
+		Node node05 = new Node(0,5);
 
+		Node node15 = new Node(1,5);
+
+		Node node22 = new Node(2,2);
+		Node node23 = new Node(2,3);
+
+		Node node30 = new Node(3,0);
+		Node node31 = new Node(3,1);
+		Node node33 = new Node(3,3);
+		Node node34 = new Node(3,4);
+
+		Node node45 = new Node(4,5);
+
+		Node node50 = new Node(5,0);
+		Node node53 = new Node(5,3);
+		Node node55 = new Node(5,5);
+
+		// link nodes together with actions
+		node00.addAction(Action.up,node03);
+		node00.addAction (Action.right, node30);
+
+		node03.addAction (Action.up, node05);
+		node03.addAction (Action.down, node00);
+		node03.addAction (Action.right, node23);
+
+		node05.addAction (Action.down, node03);
+		node05.addAction (Action.right, node15);
+
+		node15.addAction (Action.left, node05);
+
+		node22.addAction (Action.up, node23);
+
+		node23.addAction (Action.down, node22);
+		node23.addAction (Action.left, node03);
+		node23.addAction (Action.right, node33);
+
+		node30.addAction (Action.up, node31);
+		node30.addAction (Action.left, node00);
+		node30.addAction (Action.right, node50);
+
+		node31.addAction (Action.down, node30);
+
+		node33.addAction (Action.up, node34);
+		node33.addAction (Action.left, node23);
+		node33.addAction (Action.right, node53);
+
+		node34.addAction (Action.down, node33);
+
+		node45.addAction (Action.right, node55);
+
+		node50.addAction (Action.up, node53);
+		node50.addAction (Action.left, node30);
+
+		node53.addAction (Action.up, node55);
+		node53.addAction (Action.down, node50);
+		node53.addAction (Action.left, node33);
+
+		node55.addAction (Action.down, node53);
+		node55.addAction (Action.left, node45);
+
+		//configure start and goal state
+		StartState = node00;
+		GoalState = node34;
+		currentState = StartState;
 	}
 
 		
 	private void Awake()
 	{
-		agent = GameObject.Find("Agent").GetComponent<Agent>();
-		grid = GameObject.Find("FloorGrid").GetComponent<Grid>();
-		coin = GameObject.Find("Coin");
 		coin.SetActive(false);
-		currentState = StartState;
-		fillActionMap ();
+		makeGraph();
 	}
 
-	private void Start()
-	{
-		
+	void OnEnable(){
+		teleporter.Teleporting += agent.ClearUI;
+		teleporter.Teleported += agent.UpdateUI;
+	}
 
+	void OnDisable(){
+		teleporter.Teleporting -= agent.ClearUI;
+		teleporter.Teleported -= agent.UpdateUI;
 	}
 
 }
