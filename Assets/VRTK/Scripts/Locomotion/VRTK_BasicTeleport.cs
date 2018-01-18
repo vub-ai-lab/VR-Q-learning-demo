@@ -211,7 +211,7 @@ namespace VRTK
             fadeInTime = transitionSpeed;
             if (transitionSpeed > 0f)
             {
-                VRTK_SDK_Bridge.HeadsetFade(blinkToColor, 0);
+				VRTK_SDK_Bridge.HeadsetFade(blinkToColor, fadeInTime);
             }
             Invoke("ReleaseBlink", blinkPause);
         }

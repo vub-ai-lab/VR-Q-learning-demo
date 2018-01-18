@@ -10,7 +10,9 @@ using VRTK;
 [Serializable]
 public class Agent : MonoBehaviour {
     // Algorithm parameters
+	[Range(0f, 1f)]
     public float learning_rate; // The rate at which to update the value estimates given a reward.
+	[Range(0f, 1f)]
     public float discount_factor; // Discount factor for calculating Q-target.
 
 	// Environment
@@ -30,7 +32,7 @@ public class Agent : MonoBehaviour {
 	public bool learning = true;
 	[HideInInspector]
 	public Vector2Int lastState;
-	private float [ , ][] q_table;   // The matrix containing the q-value estimates.
+	private float[ , ] [] q_table;   // The matrix containing the q-value estimates.
 	private int actionSize = Enum.GetNames(typeof(Action)).Length;
 
     /// <summary>
@@ -42,7 +44,7 @@ public class Agent : MonoBehaviour {
         return GetStateValue(lastState);
     }
 
-    private float GetStateValue(Vector2Int state)
+    public float GetStateValue(Vector2Int state)
     {
 		// Since the human user performs the action selection, 
 		// we assume a uniform random policy
