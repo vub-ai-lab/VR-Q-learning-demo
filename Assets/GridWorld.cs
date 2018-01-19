@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using VRTK;
 using Action = Enums.Action;
 
@@ -52,6 +53,7 @@ public class GridWorld : MonoBehaviour{
     public VRTK_DashTeleport teleporter;
 	public Agent agent;
     public Grid grid;
+	private Tilemap tilemap;
     public GameObject coin;
     
 	// Object methods
@@ -226,7 +228,7 @@ public class GridWorld : MonoBehaviour{
 	{
 		coin.SetActive(false);
 		makeGraph();
-		PrepareStateValueSpheres ();
+		tilemap = grid.GetComponentInChildren<Tilemap> ();
 	}
 
 	void OnEnable(){
@@ -241,24 +243,15 @@ public class GridWorld : MonoBehaviour{
 		teleporter.Teleported -= VisualiseQTable;
 	}
 
-	private void PrepareStateValueSpheres(){
-		stateValueSpheres = new GameObject[6, 6];
-		for (int i = 0; i < gridSizeX * gridSizeY; i++) {
-			int x = i % 6;
-			int y = i / 6;
-			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			sphere.transform.position = grid.GetCellCenterWorld(new Vector3Int(x, y, 3)) + 3*Vector3.up;
-			sphere.transform.localScale = Vector3.zero;
-			stateValueSpheres [x, y] = sphere;
-		}  
-	}
-
 	private void VisualiseQTable(object sender, DestinationMarkerEventArgs e){
 		for (int x = 0; x < gridSizeX; x++) {
 			for (int y=0; y < gridSizeY; y++){
 				float v = agent.GetStateValue (new Vector2Int (x, y));
-				stateValueSpheres[x,y].transform.localScale = new Vector3(v,v,v);
-
+				Vector3Int position = new Vector3Int(x, y, 0);
+				if (tilemap.HasTile (position)) {
+					//tilemap.ClearAllTiles ();
+					tilemap.SetColor (position, Color.green);
+				}
 			}
 		}
 	}

@@ -160,7 +160,7 @@ namespace VRTK
         /// <param name="destinationRotation">The world rotation to teleport to.</param>
         public virtual void ForceTeleport(Vector3 destinationPosition, Quaternion? destinationRotation = null)
         {
-            DestinationMarkerEventArgs teleportArgs = BuildTeleportArgs(null, destinationPosition, destinationRotation);
+			DestinationMarkerEventArgs teleportArgs = BuildTeleportArgs(null, destinationPosition, destinationRotation);
             StartTeleport(this, teleportArgs);
             Quaternion updatedRotation = SetNewRotation(destinationRotation);
             Vector3 finalDestination = GetCompensatedPosition(destinationPosition, destinationPosition);
@@ -211,7 +211,7 @@ namespace VRTK
             fadeInTime = transitionSpeed;
             if (transitionSpeed > 0f)
             {
-				VRTK_SDK_Bridge.HeadsetFade(blinkToColor, fadeInTime);
+				VRTK_SDK_Bridge.HeadsetFade(blinkToColor, 0f);
             }
             Invoke("ReleaseBlink", blinkPause);
         }
