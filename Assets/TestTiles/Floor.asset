@@ -9,10 +9,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 1
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: Goal
+  m_Name: Floor
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: 81019631a3a82cf4d9ecb2eb9fea25ec, type: 3}
-  m_Color: {r: 0.5052532, g: 0.75735295, b: 0.0612565, a: 1}
+  m_Sprite: {fileID: 21300000, guid: eebe24d242e6ebc41b4a3f9f36abe04e, type: 3}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Transform:
     e00: 1
     e01: 0
@@ -32,4 +32,4 @@ MonoBehaviour:
     e33: 1
   m_InstancedGameObject: {fileID: 0}
   m_Flags: 1
-  m_ColliderType: 1
+  m_ColliderType: 0

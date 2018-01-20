@@ -174,6 +174,22 @@ namespace VRTK
             EndTeleport(this, teleportArgs);
         }
 
+        public virtual void ForceTeleport(Transform target, Vector3 destinationPosition, Quaternion? destinationRotation = null, bool forceDestinationPosition = false)
+        {
+            DestinationMarkerEventArgs teleportArgs = BuildTeleportArgs(target, destinationPosition, destinationRotation, forceDestinationPosition);
+            StartTeleport(this, teleportArgs);
+            Quaternion updatedRotation = SetNewRotation(destinationRotation);
+            Vector3 finalDestination = GetNewPosition(destinationPosition, target, forceDestinationPosition);
+            CalculateBlinkDelay(blinkTransitionSpeed, finalDestination);
+            Blink(blinkTransitionSpeed);
+            if (ValidRigObjects())
+            {
+                playArea.position = finalDestination;
+            }
+            ProcessOrientation(this, teleportArgs, finalDestination, updatedRotation);
+            EndTeleport(this, teleportArgs);
+        }
+
         protected virtual void Awake()
         {
             VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);

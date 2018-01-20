@@ -53,7 +53,7 @@ public class GridWorld : MonoBehaviour{
     public VRTK_DashTeleport teleporter;
 	public Agent agent;
     public Grid grid;
-	private Tilemap tilemap;
+	public Tilemap tilemap;
     public GameObject coin;
     
 	// Object methods
@@ -68,7 +68,7 @@ public class GridWorld : MonoBehaviour{
         // Set agent's position back to start
         currentState = StartState;
 		Vector2Int pos = currentState.getPosition();
-		teleporter.ForceTeleport(grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0)));
+		teleporter.ForceTeleport(agent.transform, grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0)), null, true);
 		agent.learning = true;
 		agent.lastState = pos;
         // Set environment back to not done
@@ -228,7 +228,6 @@ public class GridWorld : MonoBehaviour{
 	{
 		coin.SetActive(false);
 		makeGraph();
-		tilemap = grid.GetComponentInChildren<Tilemap> ();
 	}
 
 	void OnEnable(){

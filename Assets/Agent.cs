@@ -27,7 +27,7 @@ public class Agent : MonoBehaviour {
 	private Text[] texts;
     private Button[] buttons;
 
-	// Learning Memory\
+	// Learning Memory
 	[HideInInspector]
 	public bool learning = true;
 	[HideInInspector]
@@ -155,7 +155,7 @@ public class Agent : MonoBehaviour {
 		foreach(Action action in actions){
 			buttons [(int) action].gameObject.SetActive(true);
 			texts [(int) action].enabled = true;
-			texts[(int) action].text = GetQval(lastState, action).ToString();
+			texts[(int) action].text = GetQval(lastState, action).ToString("n2");
 		}
     }
 
