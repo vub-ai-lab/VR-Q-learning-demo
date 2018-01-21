@@ -32,7 +32,7 @@ public class Agent : MonoBehaviour {
 	public bool learning = true;
 	[HideInInspector]
 	public Vector2Int lastState;
-	private float[ , ] [] q_table;   // The matrix containing the q-value estimates.
+	private Dictionary<Action,float>[ , ] q_table;   // The matrix containing the q-value estimates.
 	private int actionSize = Enum.GetNames(typeof(Action)).Length;
 
     /// <summary>
@@ -46,15 +46,14 @@ public class Agent : MonoBehaviour {
 
     public float GetStateValue(Vector2Int state)
     {
-		// Since the human user performs the action selection, 
-		// we assume a uniform random policy
-        float result = q_table[state.x, state.y].Average();
+		// we assume a greedy policy
+        float result = q_table[state.x, state.y].Values.Max();
         return result;
     }
 
     public float GetQval(Vector2Int state, Action action)
     {
-		return q_table[state.x, state.y][(int) action];
+		return q_table[state.x, state.y][action];
     }
 
     /// <summary>
@@ -68,22 +67,14 @@ public class Agent : MonoBehaviour {
         if (terminal)
         {
 			learning = false;
-			q_table[state.x, state.y][(int)action] += learning_rate * (reward - q_table[state.x, state.y][(int)action]);
+			q_table[state.x, state.y][action] += learning_rate * (reward - q_table[state.x, state.y][action]);
         }
         else
         {
-			float q_max_nextState = q_table[nextState.x, nextState.y].Max();
-			q_table[state.x,state.y][(int) action] += learning_rate * (reward + discount_factor * q_max_nextState - q_table[state.x,state.y][(int)action]);
+			float q_max_nextState = q_table[nextState.x, nextState.y].Values.Max();
+			q_table[state.x,state.y][action] += learning_rate * (reward + discount_factor * q_max_nextState - q_table[state.x,state.y][action]);
         }
         
-    }
-
-    private IEnumerator WaitAndReset(float time)
-    {
-        // Pause
-        yield return new WaitForSeconds(time);
-        // Reset environment
-        env.Reset();
     }
 		
     private void Act(Action action)
@@ -124,7 +115,7 @@ public class Agent : MonoBehaviour {
 
     void Awake()
     {
-		q_table = new float[env.gridSizeX, env.gridSizeY][];
+		q_table = new Dictionary<Enums.Action, float>[env.gridSizeX, env.gridSizeY];
 		buttons = new Button[4] {GameObject.Find("ForwardButton").GetComponent<Button>(),
                                  GameObject.Find("BackwardButton").GetComponent<Button>(),
                                  GameObject.Find("LeftButton").GetComponent<Button>(),
@@ -133,13 +124,22 @@ public class Agent : MonoBehaviour {
 		ClearUI (this,new DestinationMarkerEventArgs());
     }
 
-	void Start () {
+	void Start()
+    {
 		lastState = env.getCurrentState();
 		for(int x=0; x < env.gridSizeX; x++)
 		{
 			for (int y = 0; y< env.gridSizeY; y++)
 			{
-				q_table[x, y] = new float[actionSize];
+                List<Action> actions = env.getActions(new Vector2Int(x, y));
+                Dictionary<Action,float> dict = new Dictionary<Enums.Action, float>();
+                if (actions != null) {
+                    foreach (Action a in actions)
+                    {
+                        dict.Add(a, 0f);
+                    }
+                }
+                q_table[x, y] = dict;
 			}
 		}
 		UpdateUI(this,new DestinationMarkerEventArgs());

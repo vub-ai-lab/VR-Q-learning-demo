@@ -13,28 +13,34 @@ public class GridWorld : MonoBehaviour{
 		private Vector2Int position;
 		private Dictionary<Action,Node> actionDict;
 
-		public Node(int x, int y){
+		public Node(int x, int y)
+        {
 			position = new Vector2Int(x,y);
 			actionDict = new Dictionary<Action, Node>();
 		}
 
-		public Vector2Int getPosition(){
+		public Vector2Int getPosition()
+        {
 			return position;
 		}
 
-		public List<Action> getActions(){
+		public List<Action> getActions()
+        {
 			return new List<Action>(actionDict.Keys);
 		}
 
-		public void addAction(Action action, Node neighbor){
+		public void addAction(Action action, Node neighbor)
+        {
 			actionDict.Add (action, neighbor);
 		}
 
-		public Node getNeighbor(Action action){
+		public Node getNeighbor(Action action)
+        {
 			return actionDict [action];
 		}
 
-		public bool hasAction(Action a){
+		public bool hasAction(Action a)
+        {
 			return actionDict.ContainsKey (a);
 		}
 	}
@@ -42,6 +48,7 @@ public class GridWorld : MonoBehaviour{
 	//Object vars
 	public int gridSizeX = 6;
 	public int gridSizeY = 6;
+    private List<Node> nodes = new List<Node>();
     private Node currentState;
 	private Node  GoalState;
 	private Node StartState;
@@ -55,6 +62,7 @@ public class GridWorld : MonoBehaviour{
     public Grid grid;
 	public Tilemap tilemap;
     public GameObject coin;
+    public Gradient tileGradient;
     
 	// Object methods
 
@@ -109,7 +117,7 @@ public class GridWorld : MonoBehaviour{
 	}
 
 	/// <summary>
-	/// Get the actions for the current state.
+	/// Get the actions for the current state of the environment.
 	/// </summary>
 	/// <returns>List of the available actions.</returns>
 	public List<Action> getActions()
@@ -117,25 +125,38 @@ public class GridWorld : MonoBehaviour{
 		return currentState.getActions ();
 	}
 
-	public bool isTerminal(){
+    public List<Action> getActions(Vector2Int state)
+    {
+        Node node = nodes.Find(n => n.getPosition() == state);
+        if (node == null) {
+            return null;
+        }
+        return node.getActions();
+    }
+
+    public bool isTerminal()
+    {
 		return done;
 	}
 		
-	private Node getNextState(Node state, Action action){
+	private Node getNextState(Node state, Action action)
+    {
 		return state.getNeighbor (action);
 	}
 
-	private void moveAgentInGameWorld(){
+	private void moveAgentInGameWorld()
+    {
 		Vector2Int pos = currentState.getPosition ();
 		Vector3 destination = grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
-		teleporter.Teleport(agent.transform, destination,null,true);
+		teleporter.Teleport(agent.transform, destination, null, true);
 		if (currentState == GoalState) {
 			StartCoroutine (ShowCoinTemporarily());
 		}
 	}
 
-	private IEnumerator ShowCoinTemporarily (){
-		yield return new WaitForSeconds (0.1f);
+	private IEnumerator ShowCoinTemporarily ()
+    {
+		yield return new WaitForSeconds (0.05f);
 		coin.SetActive (true);
 		yield return new WaitForSeconds (2f);
 		coin.SetActive (false);
@@ -152,30 +173,40 @@ public class GridWorld : MonoBehaviour{
 		return state.hasAction (action);
 	}
 
-	private void makeGraph(){
-		// make nodes
+	private void makeGraph()
+    {
+		// make nodes and add them to the list for future consultations
 		Node node00 = new Node(0,0);
+        nodes.Add(node00);
 		Node node03 = new Node(0,3);
-		Node node05 = new Node(0,5);
+        nodes.Add(node03);
+        Node node05 = new Node(0,5);
+        nodes.Add(node05);
+        Node node15 = new Node(1,5);
+        nodes.Add(node15);
+        Node node22 = new Node(2,2);
+        nodes.Add(node22);
+        Node node23 = new Node(2,3);
+        nodes.Add(node23);
+        Node node30 = new Node(3,0);
+        nodes.Add(node30);
+        Node node31 = new Node(3,1);
+        nodes.Add(node31);
+        Node node33 = new Node(3,3);
+        nodes.Add(node33);
+        Node node34 = new Node(3,4);
+        nodes.Add(node34);
+        Node node45 = new Node(4,5);
+        nodes.Add(node45);
+        Node node50 = new Node(5,0);
+        nodes.Add(node50);
+        Node node53 = new Node(5,3);
+        nodes.Add(node53);
+        Node node55 = new Node(5,5);
+        nodes.Add(node55);
 
-		Node node15 = new Node(1,5);
-
-		Node node22 = new Node(2,2);
-		Node node23 = new Node(2,3);
-
-		Node node30 = new Node(3,0);
-		Node node31 = new Node(3,1);
-		Node node33 = new Node(3,3);
-		Node node34 = new Node(3,4);
-
-		Node node45 = new Node(4,5);
-
-		Node node50 = new Node(5,0);
-		Node node53 = new Node(5,3);
-		Node node55 = new Node(5,5);
-
-		// link nodes together with actions
-		node00.addAction(Action.up,node03);
+        // link nodes together with actions
+        node00.addAction(Action.up,node03);
 		node00.addAction (Action.right, node30);
 
 		node03.addAction (Action.up, node05);
@@ -228,30 +259,41 @@ public class GridWorld : MonoBehaviour{
 	{
 		coin.SetActive(false);
 		makeGraph();
-	}
+        InitTiles();
+    }
 
-	void OnEnable(){
+	void OnEnable()
+    {
 		teleporter.Teleporting += agent.ClearUI;
 		teleporter.Teleported += agent.UpdateUI;
 		teleporter.Teleported += VisualiseQTable;
 	}
 
-	void OnDisable(){
+	void OnDisable()
+    {
 		teleporter.Teleporting -= agent.ClearUI;
 		teleporter.Teleported -= agent.UpdateUI;
 		teleporter.Teleported -= VisualiseQTable;
 	}
 
-	private void VisualiseQTable(object sender, DestinationMarkerEventArgs e){
-		for (int x = 0; x < gridSizeX; x++) {
-			for (int y=0; y < gridSizeY; y++){
-				float v = agent.GetStateValue (new Vector2Int (x, y));
-				Vector3Int position = new Vector3Int(x, y, 0);
-				if (tilemap.HasTile (position)) {
-					//tilemap.ClearAllTiles ();
-					tilemap.SetColor (position, Color.green);
-				}
-			}
+    private void InitTiles()
+    {
+        foreach (Node node in nodes)
+        {
+            Vector2Int pos = node.getPosition();
+            Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
+            tilemap.SetTileFlags(position, TileFlags.None);
+        }
+    }
+
+    private void VisualiseQTable(object sender, DestinationMarkerEventArgs e)
+    {
+		foreach(Node node in nodes)
+        {
+            Vector2Int pos = node.getPosition();
+            float v = agent.GetStateValue(pos);
+			Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
+			tilemap.SetColor (position, tileGradient.Evaluate(v/10));
 		}
 	}
 
