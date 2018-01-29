@@ -266,14 +266,14 @@ public class GridWorld : MonoBehaviour{
     {
 		teleporter.Teleporting += agent.ClearUI;
 		teleporter.Teleported += agent.UpdateUI;
-		teleporter.Teleported += VisualiseQTable;
+		//teleporter.Teleported += VisualiseQTable;
 	}
 
 	void OnDisable()
     {
 		teleporter.Teleporting -= agent.ClearUI;
 		teleporter.Teleported -= agent.UpdateUI;
-		teleporter.Teleported -= VisualiseQTable;
+		//teleporter.Teleported -= VisualiseQTable;
 	}
 
     private void InitTiles()
