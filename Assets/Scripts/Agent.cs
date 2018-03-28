@@ -10,13 +10,13 @@ using VRTK;
 [Serializable]
 public class Agent : MonoBehaviour {
     // Algorithm parameters
-	[Range(0f, 1f)]
-    public float learning_rate; // The rate at which to update the value estimates given a reward.
-	[Range(0f, 1f)]
-    public float discount_factor; // Discount factor for calculating Q-target.
+    [Range(0f, 1f)]
+    private float learning_rate; // The rate at which to update the value estimates given a reward.
+    [Range(0f, 1f)]
+    private float discount_factor; // Discount factor for calculating Q-target.
 
-	// Environment
-	public GridWorld env;
+    // Environment
+    public GridWorld env;
 
     // UI vars
     public Text Q_UpEstimText;
@@ -35,11 +35,37 @@ public class Agent : MonoBehaviour {
 	private Dictionary<Action,float>[ , ] q_table;   // The matrix containing the q-value estimates.
 	private int actionSize = Enum.GetNames(typeof(Action)).Length;
 
+    public float Learning_rate
+    {
+        get
+        {
+            return learning_rate;
+        }
+
+        set
+        {
+            learning_rate = value;
+        }
+    }
+
+    public float Discount_factor
+    {
+        get
+        {
+            return discount_factor;
+        }
+
+        set
+        {
+            discount_factor = value;
+        }
+    }
+
     /// <summary>
     /// Gets the current Estimate of the State Value
     /// </summary>
     /// <returns>The V-value of the current state.</returns>
-	public float GetCurrentStateValue()
+    public float GetCurrentStateValue()
     {
         return GetStateValue(lastState);
     }
@@ -127,23 +153,29 @@ public class Agent : MonoBehaviour {
 	void Start()
     {
 		lastState = env.getCurrentState();
-		for(int x=0; x < env.gridSizeX; x++)
-		{
-			for (int y = 0; y< env.gridSizeY; y++)
-			{
+        clearMemory();
+		UpdateUI(this,new DestinationMarkerEventArgs());
+	}
+
+    public void clearMemory()
+    {
+        for (int x = 0; x < env.gridSizeX; x++)
+        {
+            for (int y = 0; y < env.gridSizeY; y++)
+            {
                 List<Action> actions = env.getActions(new Vector2Int(x, y));
-                Dictionary<Action,float> dict = new Dictionary<Enums.Action, float>();
-                if (actions != null) {
+                Dictionary<Action, float> dict = new Dictionary<Enums.Action, float>();
+                if (actions != null)
+                {
                     foreach (Action a in actions)
                     {
                         dict.Add(a, 0f);
                     }
                 }
                 q_table[x, y] = dict;
-			}
-		}
-		UpdateUI(this,new DestinationMarkerEventArgs());
-	}
+            }
+        }
+    }
 
 	// Because we use this method as a VRTK teleport event we need the given signature
 	public void UpdateUI(object sender, DestinationMarkerEventArgs e)

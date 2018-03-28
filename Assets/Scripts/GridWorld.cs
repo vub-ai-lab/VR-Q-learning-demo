@@ -63,8 +63,22 @@ public class GridWorld : MonoBehaviour{
 	public Tilemap tilemap;
     public GameObject coin;
     public Gradient tileGradient;
-    
-	// Object methods
+    private bool showQtables;
+
+    public bool ShowQtables
+    {
+        get
+        {
+            return showQtables;
+        }
+
+        set
+        {
+            showQtables = value;
+        }
+    }
+
+    // Object methods
 
     public Vector2Int getCurrentState()
     {
@@ -254,7 +268,6 @@ public class GridWorld : MonoBehaviour{
 		currentState = StartState;
 	}
 
-		
 	private void Awake()
 	{
 		coin.SetActive(false);
@@ -266,14 +279,14 @@ public class GridWorld : MonoBehaviour{
     {
 		teleporter.Teleporting += agent.ClearUI;
 		teleporter.Teleported += agent.UpdateUI;
-		//teleporter.Teleported += VisualiseQTable;
+		teleporter.Teleported += VisualiseQTable;
 	}
 
 	void OnDisable()
     {
 		teleporter.Teleporting -= agent.ClearUI;
 		teleporter.Teleported -= agent.UpdateUI;
-		//teleporter.Teleported -= VisualiseQTable;
+		teleporter.Teleported -= VisualiseQTable;
 	}
 
     private void InitTiles()
@@ -288,13 +301,20 @@ public class GridWorld : MonoBehaviour{
 
     private void VisualiseQTable(object sender, DestinationMarkerEventArgs e)
     {
-		foreach(Node node in nodes)
-        {
-            Vector2Int pos = node.getPosition();
-            float v = agent.GetStateValue(pos);
-			Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
-			tilemap.SetColor (position, tileGradient.Evaluate(v/10));
-		}
+        if (showQtables) {
+            foreach (Node node in nodes)
+            {
+                Vector2Int pos = node.getPosition();
+                float v = agent.GetStateValue(pos);
+                Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
+                tilemap.SetColor(position, tileGradient.Evaluate(v / 10));
+            }
+        }
 	}
 
+    public void restart()
+    {
+        agent.clearMemory();
+        Reset();
+    }
 }
