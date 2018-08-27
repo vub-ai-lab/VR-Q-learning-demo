@@ -178,20 +178,7 @@ namespace VRTK
         /// <summary>
         /// The loaded SDK Setup. <see langword="null"/> if no setup is currently loaded.
         /// </summary>
-        public VRTK_SDKSetup loadedSetup
-        {
-            get
-            {
-                if (_loadedSetup == null && setups.Length == 1 && setups[0].isValid && setups[0].isActiveAndEnabled)
-                {
-                    _loadedSetup = setups[0];
-                }
-
-                return _loadedSetup;
-            }
-            private set { _loadedSetup = value; }
-        }
-        private VRTK_SDKSetup _loadedSetup;
+        public VRTK_SDKSetup loadedSetup { get; private set; }
         private static HashSet<VRTK_SDKInfo> _previouslyUsedSetupInfos = new HashSet<VRTK_SDKInfo>();
 
         /// <summary>
@@ -345,20 +332,14 @@ namespace VRTK
                 .ToDictionary(grouping => grouping.Key,
                               grouping => grouping.Select(info => info.description.vrDeviceName)
                                                   .Distinct()
+                                                  .Except(new[] { "None" })
                                                   .ToArray());
 
             foreach (BuildTargetGroup targetGroup in VRTK_SharedMethods.GetValidBuildTargetGroups())
             {
                 string[] deviceNames;
                 deviceNamesByTargetGroup.TryGetValue(targetGroup, out deviceNames);
-
-                int setupCount = deviceNames == null ? 0 : deviceNames.Length;
                 bool vrEnabled = deviceNames != null && deviceNames.Length > 0;
-
-                if (deviceNames != null)
-                {
-                    deviceNames = deviceNames.Except(new[] { "None" }).ToArray();
-                }
 
 #if UNITY_5_5_OR_NEWER
                 VREditor.SetVREnabledOnTargetGroup(targetGroup, vrEnabled);
@@ -366,25 +347,13 @@ namespace VRTK
                 VREditor.SetVREnabled(targetGroup, vrEnabled);
 #endif
 
-                string[] devices;
-                if (vrEnabled)
-                {
-                    devices = setupCount > 1
-                                  ? new[] { "None" }.Concat(deviceNames).ToArray()
-                                  : deviceNames;
-                }
-                else
-                {
-                    devices = new string[0];
-                }
-
 #if UNITY_5_5_OR_NEWER
                 VREditor.SetVREnabledDevicesOnTargetGroup(
 #else
                 VREditor.SetVREnabledDevices(
 #endif
                     targetGroup,
-                    devices
+                    vrEnabled ? new[] { "None" }.Concat(deviceNames).ToArray() : new string[0]
                 );
             }
         }
@@ -514,18 +483,18 @@ namespace VRTK
                 previousLoadedSetup.OnUnloaded(this);
             }
 
-            string loadedDeviceName = string.IsNullOrEmpty(UnityEngine.XR.XRSettings.loadedDeviceName) ? "None" : UnityEngine.XR.XRSettings.loadedDeviceName;
-            bool isDeviceAlreadyLoaded = sdkSetups[0].usedVRDeviceNames.Contains(loadedDeviceName);
+            bool isDeviceAlreadyLoaded = UnityEngine.XR.XRSettings.enabled
+                                         && sdkSetups[0].usedVRDeviceNames.Contains(UnityEngine.XR.XRSettings.loadedDeviceName);
             if (!isDeviceAlreadyLoaded)
             {
-                if (!tryToReinitialize && !UnityEngine.XR.XRSettings.enabled && loadedDeviceName != "None")
+                if (!tryToReinitialize && !UnityEngine.XR.XRSettings.enabled && !string.IsNullOrEmpty(UnityEngine.XR.XRSettings.loadedDeviceName))
                 {
-                    sdkSetups = sdkSetups.Where(setup => !setup.usedVRDeviceNames.Contains(loadedDeviceName))
+                    sdkSetups = sdkSetups.Where(setup => !setup.usedVRDeviceNames.Contains(UnityEngine.XR.XRSettings.loadedDeviceName))
                                          .ToArray();
                 }
 
                 VRTK_SDKSetup[] missingVRDeviceSetups = sdkSetups
-                    .Where(setup => setup.usedVRDeviceNames.Except(UnityEngine.XR.XRSettings.supportedDevices.Concat(new[] { "None" })).Any())
+                    .Where(setup => setup.usedVRDeviceNames.Except(UnityEngine.XR.XRSettings.supportedDevices).Any())
                     .ToArray();
                 foreach (VRTK_SDKSetup missingVRDeviceSetup in missingVRDeviceSetups)
                 {
@@ -634,7 +603,7 @@ namespace VRTK
 
             CreateInstance();
 
-            if (loadedSetup == null && autoLoadSetup)
+            if (autoLoadSetup)
             {
                 TryLoadSDKSetupFromList();
             }
@@ -692,8 +661,8 @@ namespace VRTK
                 UnloadSDKSetup();
 
                 const string errorMessage = "No SDK Setup from the provided list could be loaded.";
-                OnLoadedSetupChanged(new LoadedSetupChangeEventArgs(previousLoadedSetup, null, errorMessage));
                 VRTK_Logger.Error(errorMessage);
+                OnLoadedSetupChanged(new LoadedSetupChangeEventArgs(previousLoadedSetup, null, errorMessage));
 
                 yield break;
             }
@@ -727,8 +696,8 @@ namespace VRTK
                     UnloadSDKSetup();
 
                     errorMessage += " There are no other Setups in the provided list to try.";
-                    OnLoadedSetupChanged(new LoadedSetupChangeEventArgs(previousLoadedSetup, null, errorMessage));
                     VRTK_Logger.Error(errorMessage);
+                    OnLoadedSetupChanged(new LoadedSetupChangeEventArgs(previousLoadedSetup, null, errorMessage));
 
                     yield break;
                 }

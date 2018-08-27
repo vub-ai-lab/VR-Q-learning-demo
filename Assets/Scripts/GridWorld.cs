@@ -91,7 +91,7 @@ public class GridWorld : MonoBehaviour{
         // Set agent's position back to start
         currentState = StartState;
 		Vector2Int pos = currentState.getPosition();
-		teleporter.ForceTeleport(agent.transform, grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0)), null, true);
+        teleporter.ForceTeleport(grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0)));//, agent.transform);
 		agent.learning = true;
 		agent.lastState = pos;
         // Set environment back to not done
