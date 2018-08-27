@@ -11,9 +11,9 @@ using VRTK;
 public class Agent : MonoBehaviour {
     // Algorithm parameters
     [Range(0f, 1f)]
-    private float learning_rate; // The rate at which to update the value estimates given a reward.
+    private float learning_rate = 0.4f; // The rate at which to update the value estimates given a reward.
     [Range(0f, 1f)]
-    private float discount_factor; // Discount factor for calculating Q-target.
+    private float discount_factor = 0.9f; // Discount factor for calculating Q-target.
 
     // Environment
     public GridWorld env;
@@ -34,7 +34,7 @@ public class Agent : MonoBehaviour {
 	public Vector2Int lastState;
 	private Dictionary<Action,float>[ , ] q_table;   // The matrix containing the q-value estimates.
 	private int actionSize = Enum.GetNames(typeof(Action)).Length;
-
+    [ExposeProperty]
     public float Learning_rate
     {
         get
@@ -45,9 +45,10 @@ public class Agent : MonoBehaviour {
         set
         {
             learning_rate = value;
+            Debug.Log("Set new learning rate");
         }
     }
-
+    [ExposeProperty]
     public float Discount_factor
     {
         get
@@ -58,6 +59,7 @@ public class Agent : MonoBehaviour {
         set
         {
             discount_factor = value;
+            Debug.Log("Set new discount factor");
         }
     }
 

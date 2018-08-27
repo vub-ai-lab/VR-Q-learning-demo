@@ -63,7 +63,7 @@ public class GridWorld : MonoBehaviour{
 	public Tilemap tilemap;
     public GameObject coin;
     public Gradient tileGradient;
-    private bool showQtables;
+    private bool showQtables = true;
 
     public bool ShowQtables
     {
@@ -75,6 +75,7 @@ public class GridWorld : MonoBehaviour{
         set
         {
             showQtables = value;
+            Debug.Log("Assigned new value to showQtables");
         }
     }
 
