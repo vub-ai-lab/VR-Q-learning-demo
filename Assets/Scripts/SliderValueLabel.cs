@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+// This is the behaviour for the sliders, to set parameters during play.
 public class SliderValueLabel : MonoBehaviour
 {
     public Slider m_Slider;
@@ -22,7 +23,7 @@ public class SliderValueLabel : MonoBehaviour
         m_Slider.onValueChanged.RemoveAllListeners();
     }
 
-    //Output the new state of the Toggle into Text
+    // Output the new state of the Toggle into Text
     void SliderValueChanged()
     {
         float value = m_Slider.value;

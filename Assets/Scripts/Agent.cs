@@ -15,6 +15,7 @@ public class Agent : MonoBehaviour {
     [Range(0f, 1f)]
     private float discount_factor = 0.9f; // Discount factor for calculating Q-target.
 
+
     // Environment
     public GridWorld env;
 
@@ -34,7 +35,7 @@ public class Agent : MonoBehaviour {
 	public Vector2Int lastState;
 	private Dictionary<Action,float>[ , ] q_table;   // The matrix containing the q-value estimates.
 	private int actionSize = Enum.GetNames(typeof(Action)).Length;
-    [ExposeProperty]
+    
     public float Learning_rate
     {
         get
@@ -48,7 +49,7 @@ public class Agent : MonoBehaviour {
             Debug.Log("Set new learning rate");
         }
     }
-    [ExposeProperty]
+    
     public float Discount_factor
     {
         get

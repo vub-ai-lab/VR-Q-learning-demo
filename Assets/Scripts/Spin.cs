@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// This is a simple script to make an object rotate on its z axis.
 public class Spin : MonoBehaviour {
 
     public float speed = 100f;
