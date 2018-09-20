@@ -128,25 +128,21 @@ public class Agent : MonoBehaviour {
     public void MoveForward()
     {
 		Act(Action.up);
-
     }
 
     public void MoveBackward()
     {
         Act(Action.down);
-
     }
 
     public void MoveLeft()
     {
 		Act(Action.left);
-
     }
 
     public void MoveRight()
     {
 		Act(Action.right);
-
     }
 
     void Awake()
@@ -176,8 +172,9 @@ public class Agent : MonoBehaviour {
                 List<Action> actions = env.getActions(new Vector2Int(x, y));
                 Dictionary<Action, float> dict = new Dictionary<Enums.Action, float>();
 
+				// FIXME: Change GridWorld to use 2D dictionary of nodes rather than a list of lists
 				if (actions.Count == 0)
-					dict.Add (Action.none, 0f);
+					dict.Add (Action.down, 0f);
 				else {
 					foreach (Action a in actions)
 						dict.Add (a, 0f);
@@ -204,13 +201,13 @@ public class Agent : MonoBehaviour {
 	public void UpdateUI(object sender, DestinationMarkerEventArgs e)
     {
 		// get available actions
-		List<Action> actions = env.getActions();
+		List<Action> actions = env.getActions(env.getCurrentState());
 		// set corresponding button active
 		// set corresponding text active and update its value
 		foreach(Action action in actions){
 			buttons [(int) action].gameObject.SetActive(true);
 			texts [(int) action].enabled = true;
-			texts[(int) action].text = GetQval(lastState, action).ToString("n2");
+			texts[(int) action].text = GetQval(env.getCurrentState(), action).ToString("n2");
 		}
     }
 

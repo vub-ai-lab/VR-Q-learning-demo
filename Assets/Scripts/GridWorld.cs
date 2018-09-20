@@ -10,7 +10,6 @@ using Action = Enums.Action;
 // This class represents the labyrinth world.
 [Serializable]
 public class GridWorld : MonoBehaviour{
-
 	// Note: Origin is at top-left corner
 	List<string> labyrinth = new List<string> {
 	//        5,3
@@ -65,38 +64,38 @@ public class GridWorld : MonoBehaviour{
 		}
 	}
 
-	//Object vars
+	// Object vars
+	// ===========
+
 	public int gridSizeX;
 	public int gridSizeY;
+
     private List<List<Node>> nodes = new List<List<Node>>();
+
     private Node currentState;
-	private Node  GoalState;
+	private Node GoalState;
 	private Node StartState;
 
     private bool done = false;
 
-	private GameObject[,] stateValueSpheres;
-
-    public VRTK_DashTeleport teleporter;
 	public Agent agent;
+
+	// GUI VARIABLES
+	// =============
+
     public Grid grid;
 	public Tilemap tilemap;
     public GameObject coin;
     public Gradient tileGradient;
-    private bool showQtables = true;
+    
+	public VRTK_DashTeleport teleporter;
 
-    public bool ShowQtables
+	// FIXME: Just make public and rebind to menu
+	private bool showQtables = true;
+	public bool ShowQtables
     {
-        get
-        {
-            return showQtables;
-        }
-
-        set
-        {
-            showQtables = value;
-            Debug.Log("Assigned new value to showQtables");
-        }
+        get { return showQtables; }
+        set { showQtables = value; }
     }
 
     // Object methods
@@ -108,12 +107,11 @@ public class GridWorld : MonoBehaviour{
 
     public void Reset()
     {
-        // Set agent's position back to start
-        currentState = StartState;
-		Vector2Int pos = currentState.getPosition();
-        teleporter.ForceTeleport(grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0)));//, agent.transform);
+		currentState = StartState;
+		moveAgentInGameWorld (currentState, true);
+
 		agent.learning = true;
-		agent.lastState = pos;
+		agent.lastState = currentState.getPosition();
         // Set environment back to not done
         done = false;
     }
@@ -125,50 +123,35 @@ public class GridWorld : MonoBehaviour{
 	/// <param name="action">Action.</param>
 	public float Step(Action action)
     {
-		if (validAction(action, currentState)) 
-		{
-			Debug.Log ("Before:");
-			Debug.Log (currentState.getPosition ());
-			currentState = getNextState(currentState, action);
-			Debug.Log ("After:");
-			Debug.Log (currentState.getPosition ());
-
-			// Change position of the agent in the VR world
-			moveAgentInGameWorld();
-
-			// Provide reward
-			if (currentState == GoalState) {
-				Debug.Log ("Reached goal state");
-				done = true;
-				return 10f;
-			} else {
-				// Since we don't automatically reset the episode when the goal state is reached, 
-				// we need to ensure this for sanity when we decide to continue walking around after the goal has been reached
-				done = false;
-				// By default we give zero reward
-				return 0; 
-			}
-
-		} else {
+		if (!currentState.hasAction(action))
 			throw new InvalidOperationException ();
-		}
-	}
+		
+		Debug.Log ("Before:");
+		Debug.Log (currentState.getPosition ());
+		currentState = currentState.getNeighbor(action);
+		Debug.Log ("After:");
+		Debug.Log (currentState.getPosition ());
 
-	/// <summary>
-	/// Get the actions for the current state of the environment.
-	/// </summary>
-	/// <returns>List of the available actions.</returns>
-	public List<Action> getActions()
-	{
-		return currentState.getActions ();
+		// Change position of the agent in the VR world
+		moveAgentInGameWorld(currentState);
+
+		// Provide reward
+		if (currentState == GoalState) {
+			Debug.Log ("Reached goal state");
+			done = true;
+			return 10f;
+		} else {
+			// Since we don't automatically reset the episode when the goal state is reached, 
+			// we need to ensure this for sanity when we decide to continue walking around after the goal has been reached
+			done = false;
+			// By default we give zero reward
+			return 0; 
+		}
 	}
 
     public List<Action> getActions(Vector2Int state)
     {
 		Node node = nodes [state.y][state.x];
-        if (node == null) {
-            return null;
-        }
         return node.getActions();
     }
 
@@ -177,42 +160,21 @@ public class GridWorld : MonoBehaviour{
 		return done;
 	}
 		
-	private Node getNextState(Node state, Action action)
-    {
-		return state.getNeighbor (action);
-	}
-
-	private void moveAgentInGameWorld()
-    {
-		Vector2Int pos = currentState.getPosition ();
-		Vector3 destination = grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
-		teleporter.Teleport(agent.transform, destination, null, true);
-		if (currentState == GoalState) {
-			StartCoroutine (ShowCoinTemporarily());
-		}
-	}
-
-	private IEnumerator ShowCoinTemporarily ()
-    {
-		yield return new WaitForSeconds (0.05f);
-		coin.SetActive (true);
-		yield return new WaitForSeconds (2f);
-		coin.SetActive (false);
-	}
-		
-	/// <summary>
-	/// Check whether the action is valid in the current state.
-	/// </summary>
-	/// <returns><c>true</c>, if action is valid, <c>false</c> otherwise.</returns>
-	/// <param name="action">Action.</param>
-	/// <param name="state">State.</param>
-	private bool validAction(Action action, Node state)
+	public void restart()
 	{
-		return state.hasAction (action);
+		agent.clearMemory();
+		Reset();
 	}
+
+	// Unity calls this when it initializes everything.
+	private void Awake()
+	{
+		makeGraph();
+        InitGridGUI();
+    }
 
 	private void makeGraph()
-    {
+	{
 		gridSizeX = labyrinth[0].Length;
 		gridSizeY = labyrinth.Count;
 		for (var y = 0; y < gridSizeY; ++y) {
@@ -249,56 +211,69 @@ public class GridWorld : MonoBehaviour{
 		currentState = StartState;
 	}
 
-	// Unity calls this when it initializes everything.
-	private void Awake()
+	private void InitGridGUI()
 	{
 		coin.SetActive(false);
-		makeGraph();
-        InitTiles();
-    }
+		foreach (Node node in nodes.SelectMany(l => l))
+		{
+			Vector2Int pos = node.getPosition();
+			Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
+			tilemap.SetTileFlags(position, TileFlags.None);
+		}
+	}
 
+	// GUI DEPENDENT STUFF
+	// ===================
+
+	private void moveAgentInGameWorld(Node target, bool teleport = false)
+	{
+		Vector2Int pos = target.getPosition ();
+		Vector3 destination = grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
+
+		if (teleport)
+			teleporter.ForceTeleport(grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0))); // This teleports
+		else
+			teleporter.Teleport(agent.transform, destination, null, true); // This flies
+
+		if (currentState == GoalState) {
+			StartCoroutine (ShowCoinTemporarily());
+		}
+	}
+
+	private IEnumerator ShowCoinTemporarily ()
+	{
+		yield return new WaitForSeconds (0.05f);
+		coin.SetActive (true);
+		yield return new WaitForSeconds (2f);
+		coin.SetActive (false);
+	}
+
+	private void VisualiseQTable(object sender, DestinationMarkerEventArgs e)
+	{
+		if (showQtables) {
+			foreach (Node node in nodes.SelectMany(l => l))
+			{
+				Vector2Int pos = node.getPosition();
+				float v = agent.GetStateValue(pos);
+				Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
+				tilemap.SetColor(position, tileGradient.Evaluate(v / 10));
+			}
+		}
+	}
+		
 	void OnEnable()
-    {
+	{
+		// Enable floor buttons and color visualization
 		teleporter.Teleporting += agent.ClearUI;
 		teleporter.Teleported += agent.UpdateUI;
 		teleporter.Teleported += VisualiseQTable;
 	}
 
 	void OnDisable()
-    {
+	{
+		// Disable floor buttons and color visualization
 		teleporter.Teleporting -= agent.ClearUI;
 		teleporter.Teleported -= agent.UpdateUI;
 		teleporter.Teleported -= VisualiseQTable;
 	}
-
-    private void InitTiles()
-    {
-		foreach (Node node in nodes.SelectMany(l => l))
-        {
-            Vector2Int pos = node.getPosition();
-            Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
-            tilemap.SetTileFlags(position, TileFlags.None);
-        }
-    }
-
-    private void VisualiseQTable(object sender, DestinationMarkerEventArgs e)
-    {
-        if (showQtables) {
-			foreach (Node node in nodes.SelectMany(l => l))
-            {
-                Vector2Int pos = node.getPosition();
-				Debug.Log ("Asking value for the followig positiob");
-				Debug.Log (pos);
-                float v = agent.GetStateValue(pos);
-                Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
-                tilemap.SetColor(position, tileGradient.Evaluate(v / 10));
-            }
-        }
-	}
-
-    public void restart()
-    {
-        agent.clearMemory();
-        Reset();
-    }
 }

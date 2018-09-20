@@ -1,5 +1,5 @@
 ﻿using System;
 
 namespace Enums{
-	public enum Action{up, down, left,right, none};
+	public enum Action{up, down, left, right};
 }
