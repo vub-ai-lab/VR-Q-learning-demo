@@ -1,14 +1,34 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using VRTK;
 using Action = Enums.Action;
 
+// This class represents the labyrinth world.
 [Serializable]
 public class GridWorld : MonoBehaviour{
 
+	// Note: Origin is at top-left corner
+	List<string> labyrinth = new List<string> {
+	//        5,3
+		"..xx..",
+		".xxcx.",
+		"......",
+		".x.xx.",
+		".xx.x.",
+		"......"
+	// 0,0
+	};
+		
+	char coinChar  = 'c';
+	char wallChar  = 'x';
+	char floorChar = '.';
+
+	// This is used to represent each accessible tile in the grid.
+	// It contains the available actions and adjacent Nodes.
 	class Node{
 		private Vector2Int position;
 		private Dictionary<Action,Node> actionDict;
@@ -31,7 +51,7 @@ public class GridWorld : MonoBehaviour{
 
 		public void addAction(Action action, Node neighbor)
         {
-			actionDict.Add (action, neighbor);
+			actionDict.Add(action, neighbor);
 		}
 
 		public Node getNeighbor(Action action)
@@ -46,9 +66,9 @@ public class GridWorld : MonoBehaviour{
 	}
 
 	//Object vars
-	public int gridSizeX = 6;
-	public int gridSizeY = 6;
-    private List<Node> nodes = new List<Node>();
+	public int gridSizeX;
+	public int gridSizeY;
+    private List<List<Node>> nodes = new List<List<Node>>();
     private Node currentState;
 	private Node  GoalState;
 	private Node StartState;
@@ -107,8 +127,11 @@ public class GridWorld : MonoBehaviour{
     {
 		if (validAction(action, currentState)) 
 		{
+			Debug.Log ("Before:");
+			Debug.Log (currentState.getPosition ());
 			currentState = getNextState(currentState, action);
-			Debug.Log (String.Concat ("Entering cell ", currentState.getPosition().ToString()));
+			Debug.Log ("After:");
+			Debug.Log (currentState.getPosition ());
 
 			// Change position of the agent in the VR world
 			moveAgentInGameWorld();
@@ -142,7 +165,7 @@ public class GridWorld : MonoBehaviour{
 
     public List<Action> getActions(Vector2Int state)
     {
-        Node node = nodes.Find(n => n.getPosition() == state);
+		Node node = nodes [state.y][state.x];
         if (node == null) {
             return null;
         }
@@ -190,85 +213,43 @@ public class GridWorld : MonoBehaviour{
 
 	private void makeGraph()
     {
-		// make nodes and add them to the list for future consultations
-		Node node00 = new Node(0,0);
-        nodes.Add(node00);
-		Node node03 = new Node(0,3);
-        nodes.Add(node03);
-        Node node05 = new Node(0,5);
-        nodes.Add(node05);
-        Node node15 = new Node(1,5);
-        nodes.Add(node15);
-        Node node22 = new Node(2,2);
-        nodes.Add(node22);
-        Node node23 = new Node(2,3);
-        nodes.Add(node23);
-        Node node30 = new Node(3,0);
-        nodes.Add(node30);
-        Node node31 = new Node(3,1);
-        nodes.Add(node31);
-        Node node33 = new Node(3,3);
-        nodes.Add(node33);
-        Node node34 = new Node(3,4);
-        nodes.Add(node34);
-        Node node45 = new Node(4,5);
-        nodes.Add(node45);
-        Node node50 = new Node(5,0);
-        nodes.Add(node50);
-        Node node53 = new Node(5,3);
-        nodes.Add(node53);
-        Node node55 = new Node(5,5);
-        nodes.Add(node55);
+		gridSizeX = labyrinth[0].Length;
+		gridSizeY = labyrinth.Count;
+		for (var y = 0; y < gridSizeY; ++y) {
+			var labY = gridSizeY - y - 1;
 
-        // link nodes together with actions
-        node00.addAction(Action.up,node03);
-		node00.addAction (Action.right, node30);
+			nodes.Add (new List<Node>());
 
-		node03.addAction (Action.up, node05);
-		node03.addAction (Action.down, node00);
-		node03.addAction (Action.right, node23);
+			for (var x = 0; x < gridSizeX; ++x) {
+				Node current = new Node (x, y);
+				nodes [y].Add (current);
 
-		node05.addAction (Action.down, node03);
-		node05.addAction (Action.right, node15);
+				if (labyrinth [labY] [x] == wallChar)
+					continue;
+				if (labyrinth [labY] [x] == coinChar)
+					GoalState = current;
 
-		node15.addAction (Action.left, node05);
-
-		node22.addAction (Action.up, node23);
-
-		node23.addAction (Action.down, node22);
-		node23.addAction (Action.left, node03);
-		node23.addAction (Action.right, node33);
-
-		node30.addAction (Action.up, node31);
-		node30.addAction (Action.left, node00);
-		node30.addAction (Action.right, node50);
-
-		node31.addAction (Action.down, node30);
-
-		node33.addAction (Action.up, node34);
-		node33.addAction (Action.left, node23);
-		node33.addAction (Action.right, node53);
-
-		node34.addAction (Action.down, node33);
-
-		node45.addAction (Action.right, node55);
-
-		node50.addAction (Action.up, node53);
-		node50.addAction (Action.left, node30);
-
-		node53.addAction (Action.up, node55);
-		node53.addAction (Action.down, node50);
-		node53.addAction (Action.left, node33);
-
-		node55.addAction (Action.down, node53);
-		node55.addAction (Action.left, node45);
+				if (x > 0) {
+					if (labyrinth [labY] [x - 1] != wallChar) {
+						current.addAction (Action.left, nodes [y] [x - 1]);
+						nodes [y] [x - 1].addAction (Action.right, current);
+					}
+				}
+				if (y > 0) {
+					if (labyrinth [labY + 1] [x] != wallChar) {
+						current.addAction (Action.down, nodes [y - 1] [x]);
+						nodes [y - 1] [x].addAction (Action.up, current);
+					}
+				}
+			}
+		}
 
 		//configure start and goal state
-		StartState = node00;
-		GoalState = node34;
+		StartState = nodes[0][0];
 		currentState = StartState;
 	}
 
+	// Unity calls this when it initializes everything.
 	private void Awake()
 	{
 		coin.SetActive(false);
@@ -292,7 +273,7 @@ public class GridWorld : MonoBehaviour{
 
     private void InitTiles()
     {
-        foreach (Node node in nodes)
+		foreach (Node node in nodes.SelectMany(l => l))
         {
             Vector2Int pos = node.getPosition();
             Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
@@ -303,9 +284,11 @@ public class GridWorld : MonoBehaviour{
     private void VisualiseQTable(object sender, DestinationMarkerEventArgs e)
     {
         if (showQtables) {
-            foreach (Node node in nodes)
+			foreach (Node node in nodes.SelectMany(l => l))
             {
                 Vector2Int pos = node.getPosition();
+				Debug.Log ("Asking value for the followig positiob");
+				Debug.Log (pos);
                 float v = agent.GetStateValue(pos);
                 Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
                 tilemap.SetColor(position, tileGradient.Evaluate(v / 10));

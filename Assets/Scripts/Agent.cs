@@ -108,7 +108,14 @@ public class Agent : MonoBehaviour {
 		
     private void Act(Action action)
     {
-        float reward = env.Step(action);
+		float reward;
+		try {
+        	reward = env.Step(action);
+		} catch (InvalidOperationException e) {
+			Debug.Log ("Action invalid");
+			return;
+		}
+
 		Debug.Log("Received reward: " + reward.ToString());
 		Vector2Int nextState = env.getCurrentState();
 		if (learning) {
@@ -168,17 +175,30 @@ public class Agent : MonoBehaviour {
             {
                 List<Action> actions = env.getActions(new Vector2Int(x, y));
                 Dictionary<Action, float> dict = new Dictionary<Enums.Action, float>();
-                if (actions != null)
-                {
-                    foreach (Action a in actions)
-                    {
-                        dict.Add(a, 0f);
-                    }
-                }
-                q_table[x, y] = dict;
+
+				if (actions.Count == 0)
+					dict.Add (Action.none, 0f);
+				else {
+					foreach (Action a in actions)
+						dict.Add (a, 0f);
+				}
+                
+	            q_table[x, y] = dict;
             }
         }
     }
+
+	public void Update()
+	{
+		if (Input.GetKeyDown (KeyCode.W))
+			MoveForward ();
+		else if (Input.GetKeyDown (KeyCode.S))
+			MoveBackward ();
+		else if (Input.GetKeyDown (KeyCode.A))
+			MoveLeft ();
+		else if (Input.GetKeyDown (KeyCode.D))
+			MoveRight ();
+	}
 
 	// Because we use this method as a VRTK teleport event we need the given signature
 	public void UpdateUI(object sender, DestinationMarkerEventArgs e)
