@@ -5,7 +5,7 @@ using VRTK;
 public class ButtonEvents : MonoBehaviour {
     public VRTK_ControllerEvents controllerEvents;
     public GameObject menu;
-    public GridWorld gridWorld;
+    public Agent agent;
 
     bool menuState = false;
 
@@ -26,7 +26,7 @@ public class ButtonEvents : MonoBehaviour {
 	// This is the code for the button on top of the touchpad.
     private void ControllerEvents_ButtonTwoPressed(object sender, ControllerInteractionEventArgs e)
     {
-        gridWorld.Reset();
+        agent.ResetEpisode();
     }
 
 	// This is the code for both (either one of them needs to be pressed and released) grip buttons.

@@ -387,7 +387,7 @@ Prefab:
     - target: {fileID: 114000013740173536, guid: be540b97364be0a4890e39e62ac89ed1,
         type: 2}
       propertyPath: moveForward
-      value: 0
+      value: 110
       objectReference: {fileID: 0}
     - target: {fileID: 114000013740173536, guid: be540b97364be0a4890e39e62ac89ed1,
         type: 2}
@@ -772,7 +772,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controllerEvents: {fileID: 155742360}
   menu: {fileID: 2647756}
-  gridWorld: {fileID: 1773603326}
+  agent: {fileID: 0}
 --- !u!1 &167322169
 GameObject:
   m_ObjectHideFlags: 0
@@ -2276,6 +2276,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   env: {fileID: 1773603326}
+  envGUI: {fileID: 1773603327}
   Q_UpEstimText: {fileID: 1577104204}
   Q_DownEstimText: {fileID: 1437485555}
   Q_LeftEstimText: {fileID: 2094111823}
@@ -2742,7 +2743,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controllerEvents: {fileID: 765779384}
   menu: {fileID: 2647756}
-  gridWorld: {fileID: 1773603326}
+  agent: {fileID: 0}
 --- !u!1 &768024873
 GameObject:
   m_ObjectHideFlags: 0
@@ -4388,8 +4389,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1773603326}
-        m_MethodName: restart
+      - m_Target: {fileID: 630170861}
+        m_MethodName: RestartLearning
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4998,6 +4999,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1773603325}
   - component: {fileID: 1773603326}
+  - component: {fileID: 1773603327}
   m_Layer: 0
   m_Name: GridWorld
   m_TagString: Untagged
@@ -5032,15 +5034,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2c3b4aad76746e4197a2c1116df2e2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  coinChar: 99
+  wallChar: 120
+  floorChar: 46
   gridSizeX: 6
   gridSizeY: 6
+--- !u!114 &1773603327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1773603324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a20efb6174f9b947ba50fb29d768e87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  env: {fileID: 1773603326}
   agent: {fileID: 630170861}
   tilemap: {fileID: 535444716}
   coin: {fileID: 390195035}
   tileGradient:
     serializedVersion: 2
     key0: {r: 0, g: 0, b: 0, a: 1}
-    key1: {r: 0, g: 1, b: 0, a: 1}
+    key1: {r: 0, g: 1, b: 0.1538353, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}

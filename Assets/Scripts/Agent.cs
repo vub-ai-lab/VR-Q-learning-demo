@@ -15,9 +15,9 @@ public class Agent : MonoBehaviour {
     [Range(0f, 1f)]
     private float discount_factor = 0.9f; // Discount factor for calculating Q-target.
 
-
     // Environment
     public GridWorld env;
+	public GridWorldGUI envGUI;
 
     // UI vars
     public Text Q_UpEstimText;
@@ -106,14 +106,14 @@ public class Agent : MonoBehaviour {
         
     }
 		
-    private void Act(Action action)
+    private bool Act(Action action)
     {
 		float reward;
 		try {
         	reward = env.Step(action);
 		} catch (InvalidOperationException e) {
 			Debug.Log ("Action invalid");
-			return;
+			return false;
 		}
 
 		Debug.Log("Received reward: " + reward.ToString());
@@ -123,26 +123,59 @@ public class Agent : MonoBehaviour {
 			UpdateQTable(lastState, action, nextState, reward, done);
 		}
         lastState = nextState;
+		return true;
     }
 
     public void MoveForward()
     {
-		Act(Action.up);
+		while (Act (Action.up)) {
+			var actions = env.getActions (env.getCurrentState());
+			if (actions.Contains (Action.left) ||
+			    actions.Contains (Action.right))
+				break;
+		}
+
+		// Change position of the agent in the VR world
+		envGUI.moveAgentInGameWorld(lastState);
     }
 
     public void MoveBackward()
     {
-        Act(Action.down);
+		while (Act (Action.down)) {
+			var actions = env.getActions (env.getCurrentState());
+			if (actions.Contains (Action.left) ||
+				actions.Contains (Action.right))
+				break;
+		}
+
+		// Change position of the agent in the VR world
+		envGUI.moveAgentInGameWorld(lastState);
     }
 
     public void MoveLeft()
     {
-		Act(Action.left);
+		while (Act (Action.left)) {
+			var actions = env.getActions (env.getCurrentState());
+			if (actions.Contains (Action.up) ||
+				actions.Contains (Action.down))
+				break;
+		}
+
+		// Change position of the agent in the VR world
+		envGUI.moveAgentInGameWorld(lastState);
     }
 
     public void MoveRight()
     {
-		Act(Action.right);
+		while (Act (Action.right)) {
+			var actions = env.getActions (env.getCurrentState());
+			if (actions.Contains (Action.up) ||
+				actions.Contains (Action.down))
+				break;
+		}
+
+		// Change position of the agent in the VR world
+		envGUI.moveAgentInGameWorld(lastState);
     }
 
     void Awake()
@@ -195,6 +228,10 @@ public class Agent : MonoBehaviour {
 			MoveLeft ();
 		else if (Input.GetKeyDown (KeyCode.D))
 			MoveRight ();
+		else if (Input.GetKeyDown (KeyCode.Q))
+			RestartLearning ();
+		else if (Input.GetKeyDown (KeyCode.E))
+			ResetEpisode ();
 	}
 
 	// Because we use this method as a VRTK teleport event we need the given signature
@@ -220,5 +257,21 @@ public class Agent : MonoBehaviour {
 		foreach (Text text in texts) {
 			text.enabled = false;
 		}
+	}
+		
+	public void RestartLearning()
+	{
+		clearMemory();
+		ResetEpisode();
+	}
+
+	public void ResetEpisode()
+	{
+		env.ResetEpisode();
+
+		learning = true;
+		lastState = env.getCurrentState ();
+
+		envGUI.moveAgentInGameWorld (lastState, true);
 	}
 }
