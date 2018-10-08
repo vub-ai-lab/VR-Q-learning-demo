@@ -82,8 +82,6 @@ public class GridWorld : MonoBehaviour{
 
 	// GUI VARIABLES
 	// =============
-
-    public Grid grid;
 	public Tilemap tilemap;
     public GameObject coin;
     public Gradient tileGradient;
@@ -186,8 +184,14 @@ public class GridWorld : MonoBehaviour{
 				Node current = new Node (x, y);
 				nodes [y].Add (current);
 
-				if (labyrinth [labY] [x] == wallChar)
+				if (labyrinth [labY] [x] == wallChar) 
+				{
+					GameObject cube = GameObject.CreatePrimitive (PrimitiveType.Cube);
+					cube.transform.position = tilemap.GetCellCenterWorld (new Vector3Int (x, y, 0)) + new Vector3 (0, 2.5f, 0);
+					cube.transform.localScale = new Vector3 (2, 5, 1.5f);
 					continue;
+				}
+					
 				if (labyrinth [labY] [x] == coinChar)
 					GoalState = current;
 
@@ -218,7 +222,9 @@ public class GridWorld : MonoBehaviour{
 		{
 			Vector2Int pos = node.getPosition();
 			Vector3Int position = new Vector3Int(pos.x, pos.y, 0);
+			//tilemap.SetTile (position, ScriptableObject.CreateInstance<TileBase>());
 			tilemap.SetTileFlags(position, TileFlags.None);
+			tilemap.SetColor(position, Color.black);
 		}
 	}
 
@@ -228,10 +234,10 @@ public class GridWorld : MonoBehaviour{
 	private void moveAgentInGameWorld(Node target, bool teleport = false)
 	{
 		Vector2Int pos = target.getPosition ();
-		Vector3 destination = grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
+		Vector3 destination = tilemap.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
 
 		if (teleport)
-			teleporter.ForceTeleport(grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0))); // This teleports
+			teleporter.ForceTeleport(tilemap.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0))); // This teleports
 		else
 			teleporter.Teleport(agent.transform, destination, null, true); // This flies
 
