@@ -95,7 +95,7 @@ public class Agent : MonoBehaviour {
 	{
         if (terminal)
         {
-			learning = false;
+			// learning = false;
 			q_table[state.x, state.y][action] += learning_rate * (reward - q_table[state.x, state.y][action]);
         }
         else

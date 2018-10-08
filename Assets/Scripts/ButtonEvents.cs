@@ -14,6 +14,12 @@ public class ButtonEvents : MonoBehaviour {
     {
         controllerEvents.GripReleased += ControllerEvents_GripReleased;
         controllerEvents.ButtonTwoPressed += ControllerEvents_ButtonTwoPressed;
+		controllerEvents.TriggerClicked += ControllerEvents_TriggerClicked;
+
+		// Trigger clicks do not work with keyboard events in the simulator.
+		#if DEBUG
+		controllerEvents.TriggerPressed += ControllerEvents_TriggerClicked;
+		#endif
     }
 
 	// This will get called by Unity when the demo is closed.
@@ -21,6 +27,11 @@ public class ButtonEvents : MonoBehaviour {
     {
         controllerEvents.GripReleased -= ControllerEvents_GripReleased;
         controllerEvents.ButtonTwoPressed -= ControllerEvents_ButtonTwoPressed;
+		controllerEvents.TriggerClicked -= ControllerEvents_TriggerClicked;
+		// Trigger clicks do not work with keyboard events in the simulator.
+		#if DEBUG
+		controllerEvents.TriggerPressed -= ControllerEvents_TriggerClicked;
+		#endif
     }
 
 	// This is the code for the button on top of the touchpad.
@@ -35,4 +46,23 @@ public class ButtonEvents : MonoBehaviour {
         menuState = !menuState;
         menu.SetActive(menuState);
     }
+
+	private void ControllerEvents_TriggerClicked(object sender, ControllerInteractionEventArgs e)
+	{
+		if (menuState)
+			return;
+		
+		var direction = e.controllerReference.actual.transform.forward;
+
+		var thresh = 0.8;
+
+		if (direction.z > thresh)
+			agent.MoveForward ();
+		else if (direction.z < -thresh)
+			agent.MoveBackward ();
+		else if (direction.x < -thresh)
+			agent.MoveLeft ();
+		else if (direction.x > thresh)
+			agent.MoveRight ();
+	}
 }
