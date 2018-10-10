@@ -1,12 +1,12 @@
-﻿using System.Collections;
+﻿using Action = Enums.Action;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 using VRTK;
 
 public class GridWorldGUI : MonoBehaviour {
-	// GUI VARIABLES
-	// =============
 	public GridWorld env;
 	public Agent agent;
 
@@ -16,19 +16,21 @@ public class GridWorldGUI : MonoBehaviour {
 
 	public VRTK_DashTeleport teleporter;
 
+	// UI vars
+	public Text Q_UpEstimText;
+	public Text Q_DownEstimText;
+	public Text Q_LeftEstimText;
+	public Text Q_RightEstimText;
+
+	private Text[] texts;
+	private Button[] buttons;
+
 	// FIXME: Just make public and rebind to menu
 	private bool showQtables = true;
 	public bool ShowQtables
 	{
 		get { return showQtables; }
 		set { showQtables = value; }
-	}
-
-	public void Awake() {
-		Debug.Log ("GUI AWAKE");
-		env.makeGraph ();
-
-		InitGridGUI();
 	}
 
 	private void InitGridGUI()
@@ -64,7 +66,7 @@ public class GridWorldGUI : MonoBehaviour {
 		else
 			teleporter.Teleport(agent.transform, destination, null, true); // This flies
 
-		if (env.isTerminal(env.getCurrentState())) {
+		if (env.isTerminal()) {
 			StartCoroutine (ShowCoinTemporarily());
 		}
 	}
@@ -91,19 +93,64 @@ public class GridWorldGUI : MonoBehaviour {
 		}
 	}
 
+	// Because we use this method as a VRTK teleport event we need the given signature
+	public void UpdateUI(object sender, DestinationMarkerEventArgs e)
+	{
+		// get available actions
+		List<Action> actions = env.getActions(env.getCurrentState());
+		// set corresponding button active
+		// set corresponding text active and update its value
+		foreach(Action action in actions){
+			buttons [(int) action].gameObject.SetActive(true);
+			texts [(int) action].enabled = true;
+			texts[(int) action].text = agent.GetQval(env.getCurrentState(), action).ToString("n2");
+		}
+	}
+
+	// Because we use this method as a VRTK teleport event we need the given signature
+	public void ClearUI(object sender, DestinationMarkerEventArgs e)
+	{
+		foreach (Button button in buttons) {
+			button.gameObject.SetActive(false);
+		}
+		foreach (Text text in texts) {
+			text.enabled = false;
+		}
+	}
+
+	void Awake()
+	{
+		Debug.Log ("GUI AWAKE");
+
+		buttons = new Button[4] {GameObject.Find("ForwardButton").GetComponent<Button>(),
+			GameObject.Find("BackwardButton").GetComponent<Button>(),
+			GameObject.Find("LeftButton").GetComponent<Button>(),
+			GameObject.Find("RightButton").GetComponent<Button>()};
+		texts = new Text[4]{ Q_UpEstimText, Q_DownEstimText, Q_LeftEstimText, Q_RightEstimText };
+		ClearUI (this,new DestinationMarkerEventArgs());
+
+		env.makeGraph ();
+		InitGridGUI();
+	}
+
+	void Start()
+	{
+		UpdateUI(this,new DestinationMarkerEventArgs());
+	}
+
 	void OnEnable()
 	{
 		// Enable floor buttons and color visualization
-		teleporter.Teleporting += agent.ClearUI;
-		teleporter.Teleported += agent.UpdateUI;
+		teleporter.Teleporting += ClearUI;
+		teleporter.Teleported += UpdateUI;
 		teleporter.Teleported += VisualiseQTable;
 	}
 
 	void OnDisable()
 	{
 		// Disable floor buttons and color visualization
-		teleporter.Teleporting -= agent.ClearUI;
-		teleporter.Teleported -= agent.UpdateUI;
+		teleporter.Teleporting -= ClearUI;
+		teleporter.Teleported -= UpdateUI;
 		teleporter.Teleported -= VisualiseQTable;
 	}
 }

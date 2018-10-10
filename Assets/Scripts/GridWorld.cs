@@ -9,6 +9,8 @@ using Action = Enums.Action;
 // This class represents the labyrinth world.
 [Serializable]
 public class GridWorld : MonoBehaviour {
+
+	// String representation of maze layout
 	// Note: Origin is at top-left corner
 	List<string> labyrinth = new List<string> {
 	//        5,3
@@ -30,6 +32,8 @@ public class GridWorld : MonoBehaviour {
 	public char coinChar  = 'c';
 	public char wallChar  = 'x';
 	public char floorChar = '.';
+
+	private static System.Random rnd = new System.Random();
 
 	// This is used to represent each accessible tile in the grid.
 	// It contains the available actions and adjacent Nodes.
@@ -75,31 +79,28 @@ public class GridWorld : MonoBehaviour {
 	public int gridSizeX;
 	public int gridSizeY;
 
+	//Adjacency list graph
     private List<List<Node>> nodes = new List<List<Node>>();
 
     private Node currentState;
 	private Node GoalState;
 	private Node StartState;
 
-    private bool done = false;
-
     // Object methods
-
     public Vector2Int getCurrentState()
     {
 		return currentState.getPosition();
     }
 
-	public bool isTerminal(Vector2Int state)
+	public bool isTerminal()
 	{
-		return GoalState.getPosition () == state;
+		return currentState == GoalState;
 	}
-
+		
     public void ResetEpisode()
     {
+		//currentState = nodes [rnd.Next(nodes.Count)];
 		currentState = StartState;
-        // Set environment back to not done
-        done = false;
     }
 
 	/// <summary>
@@ -117,12 +118,8 @@ public class GridWorld : MonoBehaviour {
 		// Provide reward
 		if (currentState == GoalState) {
 			Debug.Log ("Reached goal state");
-			done = true;
 			return 10f;
 		} else {
-			// Since we don't automatically reset the episode when the goal state is reached, 
-			// we need to ensure this for sanity when we decide to continue walking around after the goal has been reached
-			done = false;
 			// By default we give zero reward
 			return 0; 
 		}
@@ -134,10 +131,7 @@ public class GridWorld : MonoBehaviour {
         return node.getActions();
     }
 
-    public bool isTerminal()
-    {
-		return done;
-	}
+    
 
 	public void makeGraph()
 	{

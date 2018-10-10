@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
+
 using Action = Enums.Action;
 using VRTK;
 
 [Serializable]
 public class Agent : MonoBehaviour {
     // Algorithm parameters
+	// These are adjustable in a GUI menu
     [Range(0f, 1f)]
     private float learning_rate = 0.4f; // The rate at which to update the value estimates given a reward.
     [Range(0f, 1f)]
@@ -19,22 +20,10 @@ public class Agent : MonoBehaviour {
     public GridWorld env;
 	public GridWorldGUI envGUI;
 
-    // UI vars
-    public Text Q_UpEstimText;
-    public Text Q_DownEstimText;
-    public Text Q_LeftEstimText;
-    public Text Q_RightEstimText;
-
-	private Text[] texts;
-    private Button[] buttons;
-
 	// Learning Memory
-	[HideInInspector]
-	public bool learning = true;
-	[HideInInspector]
-	public Vector2Int lastState;
+	private Vector2Int lastState;
 	private Dictionary<Action,float>[ , ] q_table;   // The matrix containing the q-value estimates.
-	private int actionSize = Enum.GetNames(typeof(Action)).Length;
+	//private int actionSize = Enum.GetNames(typeof(Action)).Length;
     
     public float Learning_rate
     {
@@ -76,8 +65,7 @@ public class Agent : MonoBehaviour {
     public float GetStateValue(Vector2Int state)
     {
 		// we assume a greedy policy
-        float result = q_table[state.x, state.y].Values.Max();
-        return result;
+		return q_table[state.x, state.y].Values.Max();;
     }
 
     public float GetQval(Vector2Int state, Action action)
@@ -115,13 +103,10 @@ public class Agent : MonoBehaviour {
 			Debug.Log ("Action invalid");
 			return false;
 		}
-
 		Debug.Log("Received reward: " + reward.ToString());
 		Vector2Int nextState = env.getCurrentState();
-		if (learning) {
-			bool done = env.isTerminal();
-			UpdateQTable(lastState, action, nextState, reward, done);
-		}
+		bool done = env.isTerminal();
+		UpdateQTable(lastState, action, nextState, reward, done);
         lastState = nextState;
 		return true;
     }
@@ -181,19 +166,13 @@ public class Agent : MonoBehaviour {
     void Awake()
     {
 		q_table = new Dictionary<Enums.Action, float>[env.gridSizeX, env.gridSizeY];
-		buttons = new Button[4] {GameObject.Find("ForwardButton").GetComponent<Button>(),
-                                 GameObject.Find("BackwardButton").GetComponent<Button>(),
-                                 GameObject.Find("LeftButton").GetComponent<Button>(),
-                                 GameObject.Find("RightButton").GetComponent<Button>()};
-		texts = new Text[4]{ Q_UpEstimText, Q_DownEstimText, Q_LeftEstimText, Q_RightEstimText };
-		ClearUI (this,new DestinationMarkerEventArgs());
+
     }
 
 	void Start()
     {
 		lastState = env.getCurrentState();
         clearMemory();
-		UpdateUI(this,new DestinationMarkerEventArgs());
 	}
 
     public void clearMemory()
@@ -218,6 +197,7 @@ public class Agent : MonoBehaviour {
         }
     }
 
+	#if DEBUG
 	public void Update()
 	{
 		if (Input.GetKeyDown (KeyCode.W))
@@ -233,31 +213,8 @@ public class Agent : MonoBehaviour {
 		else if (Input.GetKeyDown (KeyCode.E))
 			ResetEpisode ();
 	}
+	#endif
 
-	// Because we use this method as a VRTK teleport event we need the given signature
-	public void UpdateUI(object sender, DestinationMarkerEventArgs e)
-    {
-		// get available actions
-		List<Action> actions = env.getActions(env.getCurrentState());
-		// set corresponding button active
-		// set corresponding text active and update its value
-		foreach(Action action in actions){
-			buttons [(int) action].gameObject.SetActive(true);
-			texts [(int) action].enabled = true;
-			texts[(int) action].text = GetQval(env.getCurrentState(), action).ToString("n2");
-		}
-    }
-
-	// Because we use this method as a VRTK teleport event we need the given signature
-	public void ClearUI(object sender, DestinationMarkerEventArgs e)
-	{
-		foreach (Button button in buttons) {
-			button.gameObject.SetActive(false);
-		}
-		foreach (Text text in texts) {
-			text.enabled = false;
-		}
-	}
 		
 	public void RestartLearning()
 	{
@@ -268,10 +225,7 @@ public class Agent : MonoBehaviour {
 	public void ResetEpisode()
 	{
 		env.ResetEpisode();
-
-		learning = true;
 		lastState = env.getCurrentState ();
-
 		envGUI.moveAgentInGameWorld (lastState, true);
 	}
 }
