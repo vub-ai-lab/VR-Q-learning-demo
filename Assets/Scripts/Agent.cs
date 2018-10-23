@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-using Action = Enums.Action;
 using VRTK;
+using Action = GridWorld.Action;
 
 [Serializable]
 public class Agent : MonoBehaviour {
@@ -21,6 +21,7 @@ public class Agent : MonoBehaviour {
     // Environment
     public GridWorld env;
 	public GridWorldGUI envGUI;
+    public PythonAgent py;
 
 	// Learning Memory
 	private Vector2Int lastState;
@@ -78,7 +79,7 @@ public class Agent : MonoBehaviour {
         return GetStateValue(lastState);
     }
 
-    public float GetStateValue(Vector2Int state)
+    public float GetStateValue(int state)
     {
 		// we assume a greedy policy
 		try {
@@ -88,9 +89,13 @@ public class Agent : MonoBehaviour {
 		}
     }
 
-    public float GetQval(Vector2Int state, Action action)
+    public float GetQval(int state, Action action)
     {
-		return q_table[state.x, state.y][action];
+        var local = q_table[state][action];
+        var remote = py.GetQval(state, (int)action);
+        Debug.Log("Local: " + local + "; Remote: " + remote);
+
+		return q_table[state][action];
     }
 
 
@@ -130,9 +135,16 @@ public class Agent : MonoBehaviour {
 			return false;
 		}
 		Debug.Log("Received reward: " + reward.ToString());
-		Vector2Int nextState = env.getCurrentState();
+		var nextState = env.getCurrentState();
 		bool done = env.isTerminal();
 		UpdateQTable(lastState, action, nextState, reward, done);
+
+        if (env.isTerminal())
+            py.UpdateQTable(lastState, (int)action, lastState, reward);
+        else
+            py.UpdateQTable(lastState, (int)action, nextState, reward);
+
+
         lastState = nextState;
 		return true;
     }

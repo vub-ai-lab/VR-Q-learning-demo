@@ -1,10 +1,11 @@
-﻿using Action = Enums.Action;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using VRTK;
+
+using Action = GridWorld.Action;
 
 public class GridWorldGUI : MonoBehaviour {
 	public GridWorld env;
@@ -172,7 +173,7 @@ public class GridWorldGUI : MonoBehaviour {
 			for (var y = 0; y < env.gridSizeY; ++y) {
 				for (var x = 0; x < env.gridSizeX; ++x) {
 					Vector2Int pos = new Vector2Int(x, y);
-					float v = agent.GetStateValue (pos);
+					float v = agent.GetStateValue (env.posToInt(pos));
 					Vector3Int position = new Vector3Int (pos.x, pos.y, 0);
 					tilemap.SetColor (position, tileGradient.Evaluate (v / 10));
 				}

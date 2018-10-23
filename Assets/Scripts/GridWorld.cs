@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-using Action = Enums.Action;
-
 // This class represents the labyrinth world.
 [Serializable]
 public class GridWorld : MonoBehaviour {
@@ -120,6 +118,7 @@ public class GridWorld : MonoBehaviour {
 	public int gridSizeX;
 	[HideInInspector]
 	public int gridSizeY;
+    public int stateSpace;
 
 	//Adjacency list graph
     private List<List<Node>> nodes = new List<List<Node>>();
@@ -128,10 +127,22 @@ public class GridWorld : MonoBehaviour {
 	private Node GoalState;
 	private Node StartState;
 
-    // Object methods
-    public Vector2Int getCurrentState()
+    public int posToInt(Vector2Int pos)
     {
-		return currentState.getPosition();
+        return pos.y * gridSizeX + pos.x;
+    }
+    public Vector2Int intToPos(int s)
+    {
+        var pos = new Vector2Int();
+        pos.y = s / gridSizeX;
+        pos.x = s - pos.y * gridSizeX;
+        return pos;
+    }
+
+    // Object methods
+    public int getCurrentState()
+    {
+        return posToInt(currentState.getPosition());
     }
 
 	public bool isTerminal()
@@ -167,9 +178,10 @@ public class GridWorld : MonoBehaviour {
 			return 0; 
 	}
 
-    public List<Action> getActions(Vector2Int state)
+    public List<Action> getActions(int s)
     {
-		Node node = nodes [state.y][state.x];
+        var pos = intToPos(s);
+		Node node = nodes [pos.y][pos.x];
         return node.getActions();
     }
 

@@ -19,9 +19,9 @@ public class ButtonEvents : MonoBehaviour {
 		GridWorld.OnGoalReached += EnvEvents_GoalReached;
 
 		// Trigger clicks do not work with keyboard events in the simulator.
-		//#if DEBUG
-		//controllerEvents.TriggerPressed += ControllerEvents_TriggerClicked;
-		//#endif
+		#if DEBUG
+		controllerEvents.TriggerPressed += ControllerEvents_TriggerClicked;
+		#endif
     }
 
 	// This will get called by Unity when the demo is closed.
@@ -32,9 +32,9 @@ public class ButtonEvents : MonoBehaviour {
 		controllerEvents.TriggerClicked -= ControllerEvents_TriggerClicked;
 		GridWorld.OnGoalReached -= EnvEvents_GoalReached;
 		// Trigger clicks do not work with keyboard events in the simulator.
-		//#if DEBUG
-		//controllerEvents.TriggerPressed -= ControllerEvents_TriggerClicked;
-		//#endif
+		#if DEBUG
+		controllerEvents.TriggerPressed -= ControllerEvents_TriggerClicked;
+		#endif
     }
 
 	// This is the code for the button on top of the touchpad.
