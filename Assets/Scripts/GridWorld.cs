@@ -12,15 +12,28 @@ public class GridWorld : MonoBehaviour {
 
 	// String representation of maze layout
 	// Note: Origin is at top-left corner
-	List<string> labyrinth = new List<string> {
-	//        5,3
-		"..xx..",
-		".xxcx.",
+	static List<string> labyrinth = new List<string> {
+		".gxxh.",
+		".xxbx.",
 		"......",
-		".x.xx.",
-		".xx.x.",
-		"......"
-	// 0,0
+		".xexx.",
+		".xxfx.",
+		"s....."
+	};
+
+	// In the future I'd like to have a more difficult maze
+	static List<string> labyrinth2 = new List<string> {
+		".x.......x",
+		".x.xxxxx..",
+		".xxxxxgx.x",
+		".........x",
+		".xx.xxxx..",
+		".x..x..x.x",
+		".xx.x.xx..",
+		"....x.xxx.",
+		".xx.x..x..",
+		".xx.x.xxx.",
+		"s........."
 	};
 
 	public char getLabyrinth(int x, int y)
@@ -29,9 +42,20 @@ public class GridWorld : MonoBehaviour {
 		return labyrinth[labY][x];
 	}
 		
-	public char coinChar  = 'c';
-	public char wallChar  = 'x';
-	public char floorChar = '.';
+	public static char wallChar  = 'x';
+	public static char floorChar = '.';
+	public static char startChar = 's';
+	public static char goalChar = 'b';
+
+	public static char goldChestUp = 'a';
+	public static char goldChestDown = 'b';
+	public static char goldChestLeft = 'c';
+	public static char goldChestRight = 'd';
+	public static char emptyChestUp = 'e';
+	public static char emptyChestDown = 'f';
+	public static char emptyChestLeft = 'g';
+	public static char emptyChestRight = 'h';
+	public HashSet<char> chestChars = new HashSet<char> {goldChestUp, goldChestDown, goldChestLeft, goldChestRight, emptyChestUp, emptyChestDown, emptyChestLeft, emptyChestRight}; 
 
 	private static System.Random rnd = new System.Random();
 
@@ -40,6 +64,7 @@ public class GridWorld : MonoBehaviour {
 	class Node{
 		private Vector2Int position;
 		private Dictionary<Action,Node> actionDict;
+		private GameObject chest;
 
 		public Node(int x, int y)
         {
@@ -71,12 +96,21 @@ public class GridWorld : MonoBehaviour {
         {
 			return actionDict.ContainsKey (a);
 		}
+
+		public GameObject getChest(){
+			return chest;
+		}
+
+		public void setChest(GameObject chest_obj){
+			chest = chest_obj;
+		}
 	}
 
 	// Object vars
 	// ===========
-
+	[HideInInspector]
 	public int gridSizeX;
+	[HideInInspector]
 	public int gridSizeY;
 
 	//Adjacency list graph
@@ -100,7 +134,9 @@ public class GridWorld : MonoBehaviour {
     public void ResetEpisode()
     {
 		//currentState = nodes [rnd.Next(nodes.Count)];
+
 		currentState = StartState;
+
     }
 
 	/// <summary>
@@ -131,12 +167,19 @@ public class GridWorld : MonoBehaviour {
         return node.getActions();
     }
 
-    
+	public GameObject getChest(Vector2Int state){
+		return nodes [state.y][state.x].getChest();
+	}
 
+	public void addChest(int x, int y, GameObject obj){
+		nodes [y] [x].setChest (obj);
+	}
+		
 	public void makeGraph()
 	{
 		gridSizeX = labyrinth[0].Length;
 		gridSizeY = labyrinth.Count;
+
 		for (var y = 0; y < gridSizeY; ++y) {
 			nodes.Add (new List<Node>());
 
@@ -147,8 +190,11 @@ public class GridWorld : MonoBehaviour {
 				if (getLabyrinth(x, y) == wallChar)
 					continue;
 					
-				if (getLabyrinth(x, y) == coinChar)
+				if (getLabyrinth(x, y) == goalChar)
 					GoalState = current;
+				
+				if (getLabyrinth (x, y) == startChar)
+					currentState = StartState = current;
 
 				if (x > 0) {
 					if (getLabyrinth(x-1, y) != wallChar) {
@@ -164,11 +210,5 @@ public class GridWorld : MonoBehaviour {
 				}
 			}
 		}
-
-		//configure start and goal state
-		StartState = nodes[0][0];
-		currentState = StartState;
-		Debug.Log ("Init current state");
-		Debug.Log (currentState);
 	}
 }
