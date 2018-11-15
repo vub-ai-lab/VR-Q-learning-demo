@@ -12,28 +12,32 @@ public class GridWorld : MonoBehaviour {
 
 	// String representation of maze layout
 	// Note: Origin is at top-left corner
-	static List<string> labyrinth = new List<string> {
-		".gxxh.",
-		".xxbx.",
-		"......",
-		".xexx.",
-		".xxfx.",
-		"s....."
+	static List<string> labyrinth2 = new List<string> {
+		"xxxxxxxx",
+		"x.gxxh.x",
+		"x.xxbx.x",
+		"x......x",
+		"x.xexx.x",
+		"x.xxfx.x",
+		"xs.....x",
+		"xxxxxxxx"
 	};
 
 	// In the future I'd like to have a more difficult maze
-	static List<string> labyrinth2 = new List<string> {
-		".x.......x",
-		".x.xxxxx..",
-		".xxxxxgx.x",
-		".........x",
-		".xx.xxxx..",
-		".x..x..x.x",
-		".xx.x.xx..",
-		"....x.xxx.",
-		".xx.x..x..",
-		".xx.x.xxx.",
-		"s........."
+	static List<string> labyrinth = new List<string> {
+		"xxxxxxxxxxxx",
+		"xfx.......xx",
+		"x.xax.xxx.gx",
+		"x.xxx.xfx.xx",
+		"x.........xx",
+		"x.xx.xxxx.gx",
+		"x.xh.x.gx.xx",
+		"x.xx.x.xx..x",
+		"x....x.xxx.x",
+		"x.xx.x.gxh.x",
+		"x.xx.x.xxx.x",
+		"xs.........x",
+		"xxxxxxxxxxxx"
 	};
 
 	public char getLabyrinth(int x, int y)
@@ -45,7 +49,7 @@ public class GridWorld : MonoBehaviour {
 	public static char wallChar  = 'x';
 	public static char floorChar = '.';
 	public static char startChar = 's';
-	public static char goalChar = 'b';
+	public static char goalChar = 'a';
 
 	public static char goldChestUp = 'a';
 	public static char goldChestDown = 'b';
@@ -57,7 +61,11 @@ public class GridWorld : MonoBehaviour {
 	public static char emptyChestRight = 'h';
 	public HashSet<char> chestChars = new HashSet<char> {goldChestUp, goldChestDown, goldChestLeft, goldChestRight, emptyChestUp, emptyChestDown, emptyChestLeft, emptyChestRight}; 
 
+	private List<Node> startNodes = new List<Node> ();
 	private static System.Random rnd = new System.Random();
+
+	public delegate void EnvEvent();
+	public static event EnvEvent OnGoalReached;
 
 	// This is used to represent each accessible tile in the grid.
 	// It contains the available actions and adjacent Nodes.
@@ -133,10 +141,7 @@ public class GridWorld : MonoBehaviour {
 		
     public void ResetEpisode()
     {
-		//currentState = nodes [rnd.Next(nodes.Count)];
-
-		currentState = StartState;
-
+		currentState = startNodes [rnd.Next(startNodes.Count)];
     }
 
 	/// <summary>
@@ -153,12 +158,13 @@ public class GridWorld : MonoBehaviour {
 
 		// Provide reward
 		if (currentState == GoalState) {
-			Debug.Log ("Reached goal state");
+			if(OnGoalReached != null)
+				OnGoalReached ();
 			return 10f;
-		} else {
+		}
+		else 
 			// By default we give zero reward
 			return 0; 
-		}
 	}
 
     public List<Action> getActions(Vector2Int state)
@@ -190,12 +196,16 @@ public class GridWorld : MonoBehaviour {
 				if (getLabyrinth(x, y) == wallChar)
 					continue;
 					
-				if (getLabyrinth(x, y) == goalChar)
+				if (getLabyrinth (x, y) == goalChar)
 					GoalState = current;
 				
-				if (getLabyrinth (x, y) == startChar)
+				if (getLabyrinth (x,y) == floorChar)
+					startNodes.Add (current);
+				
+				if (getLabyrinth (x, y) == startChar) {
 					currentState = StartState = current;
-
+					startNodes.Add (current);
+				}
 				if (x > 0) {
 					if (getLabyrinth(x-1, y) != wallChar) {
 						current.addAction (Action.left, nodes [y] [x - 1]);

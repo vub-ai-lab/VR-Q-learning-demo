@@ -182,6 +182,7 @@ namespace VRTK
         {
             VRTK_PlayerObject.SetPlayerObject(gameObject, VRTK_PlayerObject.ObjectTypes.CameraRig);
             headset = VRTK_SharedMethods.AddCameraFade();
+			Debug.Log ("headset init");
             playArea = VRTK_DeviceFinder.PlayAreaTransform();
 
             adjustYForTerrain = false;

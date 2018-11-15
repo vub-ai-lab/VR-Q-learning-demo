@@ -5,9 +5,10 @@ using VRTK;
 public class ButtonEvents : MonoBehaviour {
     public VRTK_ControllerEvents controllerEvents;
     public GameObject menu;
+	public GameObject popUpMenu;
     public Agent agent;
 
-    bool menuState = false;
+    public static bool menuState = false;
 
 	// This will get called by Unity when the demo is loaded
     void OnEnable()
@@ -15,6 +16,7 @@ public class ButtonEvents : MonoBehaviour {
         controllerEvents.GripReleased += ControllerEvents_GripReleased;
         controllerEvents.ButtonTwoPressed += ControllerEvents_ButtonTwoPressed;
 		controllerEvents.TriggerClicked += ControllerEvents_TriggerClicked;
+		GridWorld.OnGoalReached += EnvEvents_GoalReached;
 
 		// Trigger clicks do not work with keyboard events in the simulator.
 		//#if DEBUG
@@ -28,6 +30,7 @@ public class ButtonEvents : MonoBehaviour {
         controllerEvents.GripReleased -= ControllerEvents_GripReleased;
         controllerEvents.ButtonTwoPressed -= ControllerEvents_ButtonTwoPressed;
 		controllerEvents.TriggerClicked -= ControllerEvents_TriggerClicked;
+		GridWorld.OnGoalReached -= EnvEvents_GoalReached;
 		// Trigger clicks do not work with keyboard events in the simulator.
 		//#if DEBUG
 		//controllerEvents.TriggerPressed -= ControllerEvents_TriggerClicked;
@@ -64,5 +67,15 @@ public class ButtonEvents : MonoBehaviour {
 			agent.MoveLeft ();
 		else if (direction.x > thresh)
 			agent.MoveRight ();
+	}
+
+	private void EnvEvents_GoalReached(){
+		//Lock controls and activate pop-up menu
+		menuState = true;
+		popUpMenu.SetActive (menuState);
+	}
+
+	public void SetMenuState(bool status){
+		menuState = status;
 	}
 }

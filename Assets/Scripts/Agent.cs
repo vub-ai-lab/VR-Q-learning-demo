@@ -16,7 +16,7 @@ public class Agent : MonoBehaviour {
     [Range(0f, 1f)]
     private float discount_factor = 0.9f; // Discount factor for calculating Q-target.
 	[Range(0f, 1f)]
-	private float trace_decay = 0.9f; // Factor Lambda to decrease eligibility traces
+	private float trace_decay = 0.6f; // Factor Lambda to decrease eligibility traces
 
     // Environment
     public GridWorld env;
@@ -148,7 +148,6 @@ public class Agent : MonoBehaviour {
 				break;
 		}
 
-		// Change position of the agent in the VR world
 		envGUI.moveAgentInGameWorld(prevState,lastState);
 	}
 
@@ -173,15 +172,14 @@ public class Agent : MonoBehaviour {
 		WalkUntilCrossing (Action.right, Action.up, Action.down);
     }
 
-	void Awake(){
-		q_table = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
-		traces = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
-	}
-
 	void Start()
     {
+		q_table = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
+		traces = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
         ClearMemory();
 		lastState = env.getCurrentState();
+		// FIXME VRTK teleporter would be preferred here but headset happens not to be enable when this is executed
+		transform.localPosition = envGUI.tilemap.GetCellCenterWorld (new Vector3Int (lastState.x, lastState.y, 0));
 	}
 
 	private void ClearQtable()

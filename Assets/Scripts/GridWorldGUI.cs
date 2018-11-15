@@ -16,13 +16,6 @@ public class GridWorldGUI : MonoBehaviour {
 	public VRTK_DashTeleport teleporter;
 
 	// UI vars
-	public Text Q_UpEstimText;
-	public Text Q_DownEstimText;
-	public Text Q_LeftEstimText;
-	public Text Q_RightEstimText;
-
-	public GameObject chest;
-
 	private Text[] texts;
 	private Button[] buttons;
 	private List<GameObject> chests;
@@ -45,9 +38,7 @@ public class GridWorldGUI : MonoBehaviour {
 					}
 					SetTile (x,y);
 					SetTraceCones (x, y);
-
 				}
-
 			}
 		}
 	}
@@ -237,11 +228,14 @@ public class GridWorldGUI : MonoBehaviour {
 			GameObject.Find("BackwardButton").GetComponent<Button>(),
 			GameObject.Find("LeftButton").GetComponent<Button>(),
 			GameObject.Find("RightButton").GetComponent<Button>()};
-		texts = new Text[4]{ Q_UpEstimText, Q_DownEstimText, Q_LeftEstimText, Q_RightEstimText };
-		trace_cones = new Dictionary<Action, GameObject>[env.gridSizeX, env.gridSizeY];
+		texts = new Text[4]{ GameObject.Find("ForwardQvalEstim").GetComponent<Text>(),
+			GameObject.Find("BackwardQvalEstim").GetComponent<Text>(),
+			GameObject.Find("LeftQvalEstim").GetComponent<Text>(),
+			GameObject.Find("RightQvalEstim").GetComponent<Text>()};
 		chests = new List<GameObject> ();
 		ClearUI (this,new DestinationMarkerEventArgs());
 		env.makeGraph ();
+		trace_cones = new Dictionary<Action, GameObject>[env.gridSizeX, env.gridSizeY];
 	}
 
 	void Start()
@@ -269,6 +263,7 @@ public class GridWorldGUI : MonoBehaviour {
 	public void ResetEpisode()
 	{
 		env.ResetEpisode ();
+		//Close chests
 		foreach (var chest in chests){
 			Animator anim = chest.GetComponent<Animator> ();
 			anim.SetBool ("open", false);
