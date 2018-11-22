@@ -16,7 +16,7 @@ public class Agent : MonoBehaviour {
     [Range(0f, 1f)]
     private float discount_factor = 0.9f; // Discount factor for calculating Q-target.
 	[Range(0f, 1f)]
-	private float trace_decay = 0.6f; // Factor Lambda to decrease eligibility traces
+	private float trace_decay = 0.8f; // Factor Lambda to decrease eligibility traces
 
     // Environment
     public GridWorld env;
