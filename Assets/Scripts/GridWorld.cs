@@ -8,35 +8,39 @@ using UnityEngine;
 [Serializable]
 public class GridWorld : MonoBehaviour {
 
+	public enum Action { up = 0, down = 1, left = 2, right = 3 };
+
 	// String representation of maze layout
 	// Note: Origin is at top-left corner
 	static List<string> labyrinth2 = new List<string> {
 		"xxxxxxxx",
-		"x.gxxh.x",
-		"x.xxbx.x",
+		"x.lxxr.x",
+		"x.xxDx.x",
 		"x......x",
-		"x.xexx.x",
-		"x.xxfx.x",
+		"x.xuxx.x",
+		"x.xxdx.x",
 		"xs.....x",
 		"xxxxxxxx"
 	};
 
 	// In the future I'd like to have a more difficult maze
-	static List<string> labyrinth = new List<string> {
+	static List<string> labyrinth1 = new List<string> {
 		"xxxxxxxxxxxx",
-		"xfx.......xx",
-		"x.xax.xxx.gx",
-		"x.xxx.xfx.xx",
+		"xdx.......xx",
+		"x.xUx.xxx.lx",
+		"x.xxx.xdx.xx",
 		"x.........xx",
-		"x.xx.xxxx.gx",
-		"x.xh.x.gx.xx",
+		"x.xx.xxxx.lx",
+		"x.xr.x.lx.xx",
 		"x.xx.x.xx..x",
 		"x....x.xxx.x",
-		"x.xx.x.gxh.x",
+		"x.xx.x.lxr.x",
 		"x.xx.x.xxx.x",
 		"xs.........x",
 		"xxxxxxxxxxxx"
 	};
+
+	static List<string> labyrinth = labyrinth2;
 
 	public char getLabyrinth(int x, int y)
 	{
@@ -47,16 +51,17 @@ public class GridWorld : MonoBehaviour {
 	public static char wallChar  = 'x';
 	public static char floorChar = '.';
 	public static char startChar = 's';
-	public static char goalChar = 'a';
 
-	public static char goldChestUp = 'a';
-	public static char goldChestDown = 'b';
-	public static char goldChestLeft = 'c';
-	public static char goldChestRight = 'd';
-	public static char emptyChestUp = 'e';
-	public static char emptyChestDown = 'f';
-	public static char emptyChestLeft = 'g';
-	public static char emptyChestRight = 'h';
+	public static char goldChestUp = 'U';
+	public static char goldChestDown = 'D';
+	public static char goldChestLeft = 'L';
+	public static char goldChestRight = 'R';
+	public static char emptyChestUp = 'u';
+	public static char emptyChestDown = 'd';
+	public static char emptyChestLeft = 'l';
+	public static char emptyChestRight = 'r';
+	public static List<char> goalChars = new List<char>{'U','D','L','R'};
+
 	public HashSet<char> chestChars = new HashSet<char> {goldChestUp, goldChestDown, goldChestLeft, goldChestRight, emptyChestUp, emptyChestDown, emptyChestLeft, emptyChestRight}; 
 
 	private List<Node> startNodes = new List<Node> ();
@@ -124,8 +129,8 @@ public class GridWorld : MonoBehaviour {
     private List<List<Node>> nodes = new List<List<Node>>();
 
     private Node currentState;
-	private Node GoalState;
 	private Node StartState;
+	private List<Node> GoalStates = new List<Node>();
 
     public int posToInt(Vector2Int pos)
     {
@@ -147,7 +152,7 @@ public class GridWorld : MonoBehaviour {
 
 	public bool isTerminal()
 	{
-		return currentState == GoalState;
+		return GoalStates.Contains(currentState);
 	}
 		
     public void ResetEpisode()
@@ -168,7 +173,7 @@ public class GridWorld : MonoBehaviour {
 		currentState = currentState.getNeighbor(action);
 
 		// Provide reward
-		if (currentState == GoalState) {
+		if (GoalStates.Contains(currentState)) {
 			if(OnGoalReached != null)
 				OnGoalReached ();
 			return 10f;
@@ -185,8 +190,9 @@ public class GridWorld : MonoBehaviour {
         return node.getActions();
     }
 
-	public GameObject getChest(Vector2Int state){
-		return nodes [state.y][state.x].getChest();
+	public GameObject getChest(int s){
+		var pos = intToPos(s);
+		return nodes [pos.y][pos.x].getChest();
 	}
 
 	public void addChest(int x, int y, GameObject obj){
@@ -197,6 +203,7 @@ public class GridWorld : MonoBehaviour {
 	{
 		gridSizeX = labyrinth[0].Length;
 		gridSizeY = labyrinth.Count;
+		stateSpace = gridSizeX * gridSizeY;
 
 		for (var y = 0; y < gridSizeY; ++y) {
 			nodes.Add (new List<Node>());
@@ -208,8 +215,8 @@ public class GridWorld : MonoBehaviour {
 				if (getLabyrinth(x, y) == wallChar)
 					continue;
 					
-				if (getLabyrinth (x, y) == goalChar)
-					GoalState = current;
+				if (goalChars.Contains(getLabyrinth (x, y)))
+					GoalStates.Add(current);
 				
 				if (getLabyrinth (x,y) == floorChar)
 					startNodes.Add (current);

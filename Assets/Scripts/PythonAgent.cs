@@ -7,7 +7,7 @@ public class PythonAgent : MonoBehaviour
 {
     private System.Diagnostics.Process process;
 
-    private void Start()
+    private void Awake()
     {
         // Starts python server
         process = new System.Diagnostics.Process();
@@ -17,6 +17,7 @@ public class PythonAgent : MonoBehaviour
         process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
 
         process.Start();
+		Debug.Log ("Started python server");
 
         // Import library since that we need only once anyway
         sendMessage("import AIToolbox");

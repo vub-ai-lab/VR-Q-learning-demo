@@ -20,7 +20,7 @@ public class GridWorldGUI : MonoBehaviour {
 	private Text[] texts;
 	private Button[] buttons;
 	private List<GameObject> chests;
-	private Dictionary<Action,GameObject>[,] trace_cones;
+	private Dictionary<Action,GameObject>[] trace_cones;
 
 	public static bool showQtable = true;
 	public static bool showTraces = true;
@@ -54,18 +54,18 @@ public class GridWorldGUI : MonoBehaviour {
 	private void SetTraceCones(int x, int y)
 	{
 		Vector2Int position = new Vector2Int (x, y);
-		List<Action> actions = env.getActions (position);
+		List<Action> actions = env.getActions (env.posToInt (position));
 		Dictionary<Action, GameObject> dict = new Dictionary<Action, GameObject> ();
 		foreach (Action act in actions) {
 			GameObject cone = Cone (position, act);
 			dict.Add (act, cone);
 		}
-		trace_cones [x, y] = dict;
+		trace_cones [env.posToInt(new Vector2Int(x, y))] = dict;
 	}
 
 	private GameObject Cone(Vector2Int state, Action act){
 		GameObject cone = (GameObject) Instantiate (Resources.Load ("Cone"));
-		float trace_val= agent.GetTraceValue(state,act);
+		float trace_val= agent.GetTraceValue(env.posToInt(state),act);
 		float height = 2.0f;
 
 		Vector3 rel_pos;
@@ -114,23 +114,22 @@ public class GridWorldGUI : MonoBehaviour {
 		// Chest type
 		if (chest_char < GridWorld.emptyChestUp) 
 			chest = (GameObject) Instantiate (Resources.Load("treasure_chest/treasure_chest"));
-
 		else
 			chest = (GameObject) Instantiate (Resources.Load("treasure_chest/treasure_chest_empty"));
 
 		// Position
 		chest.transform.position = tilemap.GetCellCenterWorld (new Vector3Int (x, y, 0));
 
-		// Rotation
+		// Rotation UP
 		Vector3 rot_vec = new Vector3 (0,0,0);
-		switch (chest_char % 4) {
-		case 0: //right
+		switch (chest_char.ToString().ToLower()[0]) {
+		case 'r': //right
 			rot_vec = new Vector3 (0, 90, 0);
 			break;
-		case 2: //down
+		case 'd': //down
 			rot_vec = new Vector3 (0, 180, 0);
 			break;
-		case 3: // left
+		case 'l': // left
 			rot_vec = new Vector3 (0, -90, 0);
 			break;
 		}
@@ -139,7 +138,7 @@ public class GridWorldGUI : MonoBehaviour {
 		return chest;
 	}
 		
-	public void moveAgentInGameWorld(Vector2Int from_pos, Vector2Int to_pos, bool teleport = false)
+	public void moveAgentInGameWorld(int from_pos, int to_pos, bool teleport = false)
 	{
 		GameObject from_chest = env.getChest (from_pos);
 		if (from_chest != null)
@@ -148,12 +147,17 @@ public class GridWorldGUI : MonoBehaviour {
 		if (to_chest != null)
 			StartCoroutine (InteractWithChest (to_chest));
 
-		Vector3 destination = tilemap.GetCellCenterWorld(new Vector3Int(to_pos.x, to_pos.y, 0));
+		Vector3 destination = getStatePosition (to_pos);
 	
 		if (teleport)
 			teleporter.ForceTeleport(destination);
 		else
 			teleporter.Teleport(agent.transform, destination, null, true); // This flies
+	}
+
+	public Vector3 getStatePosition(int state) {
+		var pos = env.intToPos (state);
+		return tilemap.GetCellCenterWorld (new Vector3Int (pos.x, pos.y, 0));
 	}
 
 	private IEnumerator InteractWithChest(GameObject chest){
@@ -184,13 +188,10 @@ public class GridWorldGUI : MonoBehaviour {
 	private void VisualiseTraces()
 	{
 		if (showTraces) {
-			for (var y = 0; y < env.gridSizeY; ++y) {
-				for (var x = 0; x < env.gridSizeX; ++x) {
-					Vector2Int pos = new Vector2Int(x, y);
-					foreach (Action a in env.getActions(pos)) {
-						float v = agent.GetTraceValue (pos, a);
-						trace_cones [x, y] [a].transform.localScale = new Vector3 (v * 20, v * 20, v * 20);
-					}
+			for (var x = 0; x < env.stateSpace; ++x) {
+				foreach (Action a in env.getActions(x)) {
+					float v = agent.GetTraceValue (x, a);
+					trace_cones [x] [a].transform.localScale = new Vector3 (v * 20, v * 20, v * 20);
 				}
 			}
 		}
@@ -236,7 +237,7 @@ public class GridWorldGUI : MonoBehaviour {
 		chests = new List<GameObject> ();
 		ClearUI (this,new DestinationMarkerEventArgs());
 		env.makeGraph ();
-		trace_cones = new Dictionary<Action, GameObject>[env.gridSizeX, env.gridSizeY];
+		trace_cones = new Dictionary<Action, GameObject>[env.stateSpace];
 	}
 
 	void Start()
