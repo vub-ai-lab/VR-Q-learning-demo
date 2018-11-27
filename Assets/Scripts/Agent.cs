@@ -72,7 +72,7 @@ public class Agent : MonoBehaviour {
 
 	void Start()
 	{
-		py.initializeQLearning (env.stateSpace, 4);
+		// py.initializeQLearning (env.stateSpace, 4);
 		q_table = new Dictionary<Action, float>[env.stateSpace];
 		traces = new Dictionary<Action, float>[env.stateSpace];
 		ClearMemory();
@@ -102,9 +102,9 @@ public class Agent : MonoBehaviour {
 
     public float GetQval(int state, Action action)
     {
-        var local = q_table[state][action];
-        var remote = py.GetQval(state, (int)action);
-        Debug.Log("Local: " + local + "; Remote: " + remote);
+        // var local = q_table[state][action];
+        // var remote = py.GetQval(state, (int)action);
+        // Debug.Log("Local: " + local + "; Remote: " + remote);
 
 		return q_table[state][action];
     }
@@ -148,10 +148,10 @@ public class Agent : MonoBehaviour {
 		bool done = env.isTerminal();
 		UpdateQTable(lastState, action, nextState, reward, done);
 
-        if (env.isTerminal())
-            py.UpdateQTable(lastState, (int)action, lastState, reward);
-        else
-            py.UpdateQTable(lastState, (int)action, nextState, reward);
+        //if (env.isTerminal())
+        //    py.UpdateQTable(lastState, (int)action, lastState, reward);
+        //else
+        //    py.UpdateQTable(lastState, (int)action, nextState, reward);
 
 
         lastState = nextState;

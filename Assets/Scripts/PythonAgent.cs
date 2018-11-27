@@ -7,20 +7,24 @@ public class PythonAgent : MonoBehaviour
 {
     private System.Diagnostics.Process process;
 
+    public bool enabled = true;
+
     private void Awake()
     {
-        // Starts python server
-        process = new System.Diagnostics.Process();
-        process.StartInfo.FileName = "python";
-        process.StartInfo.Arguments = "server.py";
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+        if (enabled) {
+            // Starts python server
+            process = new System.Diagnostics.Process ();
+            process.StartInfo.FileName = "python";
+            process.StartInfo.Arguments = "server.py";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
 
-        process.Start();
-		Debug.Log ("Started python server");
+            process.Start ();
+            Debug.Log ("Started python server");
 
-        // Import library since that we need only once anyway
-        sendMessage("import AIToolbox");
+            // Import library since that we need only once anyway
+            sendMessage ("import AIToolbox");
+        }
     }
 
     public void OnApplicationQuit()

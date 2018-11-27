@@ -111,8 +111,14 @@ public class GridWorldGUI : MonoBehaviour {
 
 	public GameObject makeChest(int x, int y, char chest_char){
 		GameObject chest;
+
+		// u, r, d, l
+		var chest_orientation = char.ToLower (chest_char);
+		// true or false
+		var chest_empty = char.IsLower (chest_char);
+
 		// Chest type
-		if (chest_char < GridWorld.emptyChestUp) 
+		if (!chest_empty)
 			chest = (GameObject) Instantiate (Resources.Load("treasure_chest/treasure_chest"));
 		else
 			chest = (GameObject) Instantiate (Resources.Load("treasure_chest/treasure_chest_empty"));
@@ -122,7 +128,7 @@ public class GridWorldGUI : MonoBehaviour {
 
 		// Rotation UP
 		Vector3 rot_vec = new Vector3 (0,0,0);
-		switch (chest_char.ToString().ToLower()[0]) {
+		switch (chest_orientation) {
 		case 'r': //right
 			rot_vec = new Vector3 (0, 90, 0);
 			break;
