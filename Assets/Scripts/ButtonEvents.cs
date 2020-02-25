@@ -8,7 +8,7 @@ public class ButtonEvents : MonoBehaviour {
 	public GameObject popUpMenu;
     public Agent agent;
 
-    public static bool menuState = false;
+    public static bool disabled = false;
 
 	// This will get called by Unity when the demo is loaded
     void OnEnable()
@@ -46,15 +46,15 @@ public class ButtonEvents : MonoBehaviour {
 	// This is the code for both (either one of them needs to be pressed and released) grip buttons.
     private void ControllerEvents_GripReleased(object sender, ControllerInteractionEventArgs e)
     {
-        menuState = !menuState;
-        menu.SetActive(menuState);
+		disabled = !disabled;
+		menu.SetActive(disabled);
     }
 
 	private void ControllerEvents_TriggerClicked(object sender, ControllerInteractionEventArgs e)
 	{
-		if (menuState)
+		if (disabled)
 			return;
-		
+
 		var direction = e.controllerReference.actual.transform.forward;
 
 		var thresh = 0.8;
@@ -71,11 +71,11 @@ public class ButtonEvents : MonoBehaviour {
 
 	private void EnvEvents_GoalReached(){
 		//Lock controls and activate pop-up menu
-		menuState = true;
-		popUpMenu.SetActive (menuState);
+		disabled = true;
+		popUpMenu.SetActive (disabled);
 	}
 
-	public void SetMenuState(bool status){
-		menuState = status;
+	public void SetDisabled(bool status){
+		disabled = status;
 	}
 }

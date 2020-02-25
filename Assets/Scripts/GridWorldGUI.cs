@@ -15,6 +15,13 @@ public class GridWorldGUI : MonoBehaviour {
 
 	public VRTK_DashTeleport teleporter;
 
+	// Disabling controllers during teleportation
+	public ButtonEvents leftController;
+	public ButtonEvents rightController;
+
+	// Checking the status (dirty bug fix)
+	public GameObject popUpMenu;
+
 	// UI vars
 	private Text[] texts;
 	private Button[] buttons;
@@ -220,6 +227,23 @@ public class GridWorldGUI : MonoBehaviour {
 		}
 	}
 
+	// Because we use this method as a VRTK teleport event we need the given signature
+	public void DisableControllers(object sender, DestinationMarkerEventArgs e)
+	{
+		leftController.SetDisabled (true);
+		rightController.SetDisabled (true);
+	}
+
+	// Because we use this method as a VRTK teleport event we need the given signature
+	public void ReEnableControllers(object sender, DestinationMarkerEventArgs e)
+	{
+		// unless a pop-up menu has been acivated (due to goal reached event, this is a dirty bug fix to be done cleaner)
+		if (popUpMenu.activeSelf)
+			return;
+		leftController.SetDisabled (false);
+		rightController.SetDisabled (false);
+	}
+
 	void Awake()
 	{
 		Debug.Log ("GUI AWAKE");
@@ -247,17 +271,21 @@ public class GridWorldGUI : MonoBehaviour {
 	void OnEnable()
 	{
 		// Enable floor buttons and color visualization
+		teleporter.Teleporting += DisableControllers;
 		teleporter.Teleporting += ClearUI;
 		teleporter.Teleported += UpdateUI;
 		teleporter.Teleported += Visualise;
+		teleporter.Teleported += ReEnableControllers;
 	}
 
 	void OnDisable()
 	{
 		// Disable floor buttons and color visualization
+		teleporter.Teleporting -= DisableControllers;
 		teleporter.Teleporting -= ClearUI;
 		teleporter.Teleported -= UpdateUI;
 		teleporter.Teleported -= Visualise;
+		teleporter.Teleported -= ReEnableControllers;
 	}
 
 	public void ResetEpisode()
