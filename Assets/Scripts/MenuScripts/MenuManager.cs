@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Valve.VR;
 
 public class MenuManager : MonoBehaviour
 {
@@ -11,6 +12,13 @@ public class MenuManager : MonoBehaviour
     private void Start(){
         SetupPanels();
         Debug.Log("Panels have been set up");
+    }
+
+    private void OnDisable()
+    {
+        //Send The selected algorithm to the next scene
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "Qlearning");
+        Debug.Log("Disabled");
     }
 
     private void SetupPanels(){
@@ -45,5 +53,10 @@ public class MenuManager : MonoBehaviour
 
         currentPanel = newPanel;
         currentPanel.Show();
+    }
+
+    public void ToMaze(){
+        //UnityEngine.SceneManagement.SceneManager.LoadScene("main"); 
+        SteamVR_LoadLevel.Begin("main");
     }
 }

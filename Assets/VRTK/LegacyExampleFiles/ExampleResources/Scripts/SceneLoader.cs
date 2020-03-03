@@ -40,6 +40,8 @@
                 VRTK_SDKManager.ProcessDelayedToggleBehaviours();
                 setupSwitcher = sdkManager.GetComponentInChildren<VRTK_SDKSetupSwitcher>();
             }
+
+            Debug.Log("Loaded");
         }
 
         protected virtual void ToggleScriptAlias(bool state)

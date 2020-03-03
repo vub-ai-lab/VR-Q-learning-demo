@@ -276,6 +276,7 @@ public class GridWorldGUI : MonoBehaviour {
 		teleporter.Teleported += UpdateUI;
 		teleporter.Teleported += Visualise;
 		teleporter.Teleported += ReEnableControllers;
+
 	}
 
 	void OnDisable()

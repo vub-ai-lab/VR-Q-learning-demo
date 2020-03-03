@@ -22,11 +22,17 @@ public class Agent : MonoBehaviour {
     public GridWorld env;
 	public GridWorldGUI envGUI;
 
+    // Algorithms
+    public QlearningWtraces qlearningWtraces;
+
 	// Learning Memory
 	private Vector2Int lastState;
 	private Dictionary<Action,float>[ , ] q_table;   // The matrix containing the q-value estimates.
 	private Dictionary<Action,float>[ , ] traces;  // Matrix containing the eligibility traces
-    
+
+	private String algorithmType;
+    private Algorithm algorithm;
+
     public float Learning_rate
     {
         get
@@ -180,6 +186,17 @@ public class Agent : MonoBehaviour {
 		lastState = env.getCurrentState();
 		// FIXME VRTK teleporter would be preferred here but headset happens not to be enable when this is executed
 		transform.localPosition = envGUI.tilemap.GetCellCenterWorld (new Vector3Int (lastState.x, lastState.y, 0));
+
+        		// Get the algorithm the user selected in the StartMenu
+		algorithmType = UnityEngine.PlayerPrefs.GetString("Algorithm");
+        switch(algorithmType)
+        {
+            case "Qlearning":
+                algorithm = qlearningWtraces;
+                break;
+        }
+
+        Debug.Log(algorithm.Test());
 	}
 
 	private void ClearQtable()
