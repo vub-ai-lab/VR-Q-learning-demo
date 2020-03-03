@@ -9,26 +9,10 @@ using VRTK;
 
 [Serializable]
 public class Agent : MonoBehaviour {
-    // Algorithm parameters
-	// These are adjustable in a GUI menu
-    [Range(0f, 1f)]
-    private float learning_rate = 0.4f; // The rate at which to update the value estimates given a reward.
-    [Range(0f, 1f)]
-    private float discount_factor = 0.9f; // Discount factor for calculating Q-target.
-	[Range(0f, 1f)]
-	private float trace_decay = 0.8f; // Factor Lambda to decrease eligibility traces
 
-    // Environment
-    public GridWorld env;
-	public GridWorldGUI envGUI;
 
     // Algorithms
     public QlearningWtraces qlearningWtraces;
-
-	// Learning Memory
-	private Vector2Int lastState;
-	private Dictionary<Action,float>[ , ] q_table;   // The matrix containing the q-value estimates.
-	private Dictionary<Action,float>[ , ] traces;  // Matrix containing the eligibility traces
 
 	private String algorithmType;
     private Algorithm algorithm;
@@ -37,12 +21,12 @@ public class Agent : MonoBehaviour {
     {
         get
         {
-            return learning_rate;
+            return algorithm.Learning_rate;
         }
 
         set
         {
-            learning_rate = value;
+            algorithm.Learning_rate = value;
             Debug.Log("Set new learning rate.");
         }
     }
@@ -51,12 +35,12 @@ public class Agent : MonoBehaviour {
     {
         get
         {
-            return discount_factor;
+            return algorithm.Discount_factor;
         }
 
         set
         {
-            discount_factor = value;
+            algorithm.Discount_factor = value;
             Debug.Log("Set new discount factor.");
         }
     }
@@ -65,12 +49,12 @@ public class Agent : MonoBehaviour {
 	{
 		get
 		{
-			return trace_decay;
+			return algorithm.Trace_decay;
 		}
 
 		set
 		{
-			trace_decay = value;
+			algorithm.Trace_decay = value;
 			Debug.Log("Set new trace decay.");
 		}
 	}
@@ -81,28 +65,23 @@ public class Agent : MonoBehaviour {
     /// <returns>The V-value of the current state.</returns>
     public float GetCurrentStateValue()
     {
-        return GetStateValue(lastState);
+        return GetStateValue(algorithm.LastState);
     }
 
     public float GetStateValue(Vector2Int state)
     {
-		// we assume a greedy policy
-		try {
-			return q_table[state.x, state.y].Values.Max();
-		} catch (InvalidOperationException e) {
-			return 0f;
-		}
-    }
+        return algorithm.GetStateValue(state);
+;   }
 
     public float GetQval(Vector2Int state, Action action)
     {
-		return q_table[state.x, state.y][action];
+        return algorithm.GetQval(state, action);
     }
 
 
 	public float GetTraceValue(Vector2Int state, Action action)
 	{
-		return traces[state.x, state.y][action];
+		return algorithm.GetTraceValue(state, action);
 	}
 
     /// <summary>
@@ -113,21 +92,17 @@ public class Agent : MonoBehaviour {
     /// <param name="done">Whether the episode has ended</param>
 	public void UpdateQTable(Vector2Int state, Action action, Vector2Int nextState, float reward, bool terminal) 
 	{
-		float blop = terminal ? 0 : discount_factor * q_table [nextState.x, nextState.y].Values.Max ();
-		float delta = reward + blop - q_table [state.x, state.y] [action];
-		traces [state.x, state.y] [action] = 1;
-		for (int x = 0; x < env.gridSizeX; x++) {
-			for (int y = 0; y < env.gridSizeY; y++) {
-				foreach (Action a in new List<Action>(q_table[x,y].Keys)) {
-					q_table [x, y] [a] += learning_rate * delta * traces [x, y] [a];
-					traces [x, y] [a] *= discount_factor * trace_decay;
-				}
-			}
-		}
+
+        algorithm.UpdateQTable(state, action, nextState, reward, terminal);
+        
     }
 		
+
+    // Handle player movement
     private bool Act(Action action)
     {
+        GridWorld env = algorithm.env;
+
 		float reward;
 		try {
         	reward = env.Step(action);
@@ -138,15 +113,17 @@ public class Agent : MonoBehaviour {
 		Debug.Log("Received reward: " + reward.ToString());
 		Vector2Int nextState = env.getCurrentState();
 		bool done = env.isTerminal();
-		UpdateQTable(lastState, action, nextState, reward, done);
-        lastState = nextState;
+		UpdateQTable(algorithm.LastState, action, nextState, reward, done);
+        algorithm.LastState = nextState;
 		return true;
     }
 
 	private void WalkUntilCrossing(Action chosen_action, Action crossing_action1, Action crossing_action2)
 	{
+        GridWorld env = algorithm.env;
+        GridWorldGUI envGUI = algorithm.envGUI;
 
-		Vector2Int prevState = lastState;
+        Vector2Int prevState = algorithm.LastState;
 		while (Act (chosen_action)) {
 			var actions = env.getActions (env.getCurrentState());
 			if (actions.Contains (crossing_action1) ||
@@ -154,7 +131,7 @@ public class Agent : MonoBehaviour {
 				break;
 		}
 
-		envGUI.moveAgentInGameWorld(prevState,lastState);
+		envGUI.moveAgentInGameWorld(prevState,algorithm.LastState);
 	}
 
 
@@ -180,14 +157,9 @@ public class Agent : MonoBehaviour {
 
 	void Start()
     {
-		q_table = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
-		traces = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
-        ClearMemory();
-		lastState = env.getCurrentState();
-		// FIXME VRTK teleporter would be preferred here but headset happens not to be enable when this is executed
-		transform.localPosition = envGUI.tilemap.GetCellCenterWorld (new Vector3Int (lastState.x, lastState.y, 0));
 
-        		// Get the algorithm the user selected in the StartMenu
+
+        // Get the algorithm the user selected in the StartMenu
 		algorithmType = UnityEngine.PlayerPrefs.GetString("Algorithm");
         switch(algorithmType)
         {
@@ -196,47 +168,14 @@ public class Agent : MonoBehaviour {
                 break;
         }
 
+        algorithm.Initialize();
+
         Debug.Log(algorithm.Test());
-	}
-
-	private void ClearQtable()
-	{
-		for (int x = 0; x < env.gridSizeX; x++)
-		{
-			for (int y = 0; y < env.gridSizeY; y++)
-			{
-				List<Action> actions = env.getActions(new Vector2Int(x, y));
-				Dictionary<Action, float> dict = new Dictionary<Enums.Action, float>();
-	
-				foreach (Action a in actions)
-					dict.Add (a, 0f);
-				
-				q_table[x, y] = dict;
-			}
-		}
-	}
-
-	private void ClearTraces()
-	{
-		for (int x = 0; x < env.gridSizeX; x++)
-		{
-			for (int y = 0; y < env.gridSizeY; y++)
-			{
-				List<Action> actions = env.getActions(new Vector2Int(x, y));
-				Dictionary<Action, float> dict = new Dictionary<Enums.Action, float>();
-		
-				foreach (Action a in actions)
-					dict.Add (a, 0f);
-
-				traces[x, y] = dict;
-			}
-		}
 	}
 
     public void ClearMemory()
     {
-		ClearQtable ();
-		ClearTraces ();
+        algorithm.ClearMemory();
     }
 
 	#if DEBUG
@@ -260,15 +199,11 @@ public class Agent : MonoBehaviour {
 		
 	public void RestartLearning()
 	{
-		ClearMemory();
-		ResetEpisode();
+        algorithm.RestartLearning();
 	}
 
 	public void ResetEpisode()
 	{
-		ClearTraces ();
-		envGUI.ResetEpisode();
-		lastState = env.getCurrentState ();
-		envGUI.moveAgentInGameWorld (lastState, lastState, true);
+        algorithm.ResetEpisode();
 	}
 }
