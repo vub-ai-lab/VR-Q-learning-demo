@@ -2,26 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR;
+using SceneManager = UnityEngine.SceneManagement.SceneManager;
 
 public class MenuManager : MonoBehaviour
 {
     public Panel currentPanel = null;
 
     private List<Panel> panelHistory = new List<Panel>();
-    
-    private void Start(){
+
+    private void Start()
+    {
         SetupPanels();
         Debug.Log("Panels have been set up");
     }
 
-    private void OnDisable()
+    private void SetupPanels()
     {
-        //Send The selected algorithm to the next scene
-        UnityEngine.PlayerPrefs.SetString("Algorithm", "Qlearning");
-        Debug.Log("Disabled");
-    }
-
-    private void SetupPanels(){
         Panel[] panels = GetComponentsInChildren<Panel>();
 
 
@@ -33,30 +29,48 @@ public class MenuManager : MonoBehaviour
         currentPanel.Show();
     }
 
-    public void GoToPrevious(){
-        if(panelHistory.Count == 0)
+    public void GoToPrevious()
+    {
+        if (panelHistory.Count == 0)
             return;
 
         SetCurrent(panelHistory[panelHistory.Count - 1]);
         panelHistory.RemoveAt(panelHistory.Count - 1);
     }
 
-    public void SetCurrentWithHistory(Panel newPanel){
+    public void SetCurrentWithHistory(Panel newPanel)
+    {
         Debug.Log("Clicked the button");
 
         panelHistory.Add(currentPanel);
         SetCurrent(newPanel);
     }
 
-    private void SetCurrent(Panel newPanel){
+    private void SetCurrent(Panel newPanel)
+    {
         currentPanel.Hide();
 
         currentPanel = newPanel;
         currentPanel.Show();
     }
 
-    public void ToMaze(){
-        //UnityEngine.SceneManagement.SceneManager.LoadScene("main"); 
-        SteamVR_LoadLevel.Begin("main");
+    private void ToMaze()
+    {
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("main");
+
+    }
+
+    public void LoadQlearning()
+    {
+        //Send the selected algorithm to the agent
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "Qlearning");
+        ToMaze();
+    }
+
+    public void LoadSarsa()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "SARSA");
+        ToMaze();
     }
 }

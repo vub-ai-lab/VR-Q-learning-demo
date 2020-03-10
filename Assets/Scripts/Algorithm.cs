@@ -20,6 +20,9 @@ abstract public class Algorithm : MonoBehaviour
     [Range(0f, 1f)]
     protected float trace_decay = 0.8f; // Factor Lambda to decrease eligibility traces
 
+    [Range(0f, 1f)]
+    protected float Epsylon = 0f; // Chance for exploration
+
     // Learning Memory
     protected Vector2Int lastState;
     protected Dictionary<Action, float>[,] q_table;   // The matrix containing the q-value estimates.
@@ -41,7 +44,7 @@ abstract public class Algorithm : MonoBehaviour
             lastState = value;
             Debug.Log("Set new last state");
         }
-        
+
     }
 
     public float Learning_rate
@@ -109,20 +112,43 @@ abstract public class Algorithm : MonoBehaviour
         return q_table[state.x, state.y][action];
     }
 
-    public abstract void UpdateQTable(Vector2Int state, Action action, Vector2Int nextState, float reward, bool terminal);
+    public float GetPickChance(Vector2Int state, Action selectedAction, List<Action> actions)
+    {
+
+        List<Action> maxList = new List<Action>();
+        float maxVal = q_table[state.x, state.y].Values.Max();
+
+        //Construct list of maximum Qvalues
+        foreach (Action action in actions)
+        {
+            if (q_table[state.x, state.y][action] == maxVal)
+            {
+                maxList.Add(action);
+            }
+        }
+
+        if (maxList.Count == actions.Count) //In case the Qvalue for every state action pair is equal
+        {
+            return 1.0f / maxList.Count;
+        }
+        else if (maxList.Contains(selectedAction))
+        {
+            return (1.0f - Epsylon) / maxList.Count;
+        }
+        else
+        {
+            return Epsylon / (actions.Count - maxList.Count);
+        }
+
+    }
+
+
+    public abstract void UpdateValues(Action action, Vector2Int nextState, float reward, bool terminal);
 
     public abstract string Test();
-  
 
-    public void Initialize()
-    {
-        q_table = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
-        traces = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
-        ClearMemory();
-        lastState = env.getCurrentState();
-        // FIXME VRTK teleporter would be preferred here but headset happens not to be enable when this is executed
-        transform.localPosition = envGUI.tilemap.GetCellCenterWorld(new Vector3Int(lastState.x, lastState.y, 0));
-    }
+
+    public abstract void Initialize();
 
     protected void ClearQtable()
     {
@@ -166,6 +192,7 @@ abstract public class Algorithm : MonoBehaviour
 
     public void RestartLearning()
     {
+
         ClearMemory();
         ResetEpisode();
     }

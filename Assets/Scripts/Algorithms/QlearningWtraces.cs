@@ -10,7 +10,7 @@ using VRTK;
 public class QlearningWtraces : Algorithm
 {
 
-    public override void UpdateQTable(Vector2Int state, Action action, Vector2Int nextState, float reward, bool terminal)
+    private void UpdateQTable(Vector2Int state, Action action, Vector2Int nextState, float reward, bool terminal)
     {
         float blop = terminal ? 0 : discount_factor * q_table[nextState.x, nextState.y].Values.Max();
         float delta = reward + blop - q_table[state.x, state.y][action];
@@ -29,9 +29,31 @@ public class QlearningWtraces : Algorithm
     }
 
 
+    public override void UpdateValues(Action action, Vector2Int nextState, float reward, bool terminal)
+    {
+        UpdateQTable(lastState, action, nextState, reward, terminal);
+        lastState = nextState;
+
+    }
+
+    public override void Initialize()
+    {
+
+
+        q_table = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
+        traces = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
+        ClearMemory();
+        lastState = env.getCurrentState();
+
+        // FIXME VRTK teleporter would be preferred here but headset happens not to be enable when this is executed
+        transform.localPosition = envGUI.tilemap.GetCellCenterWorld(new Vector3Int(lastState.x, lastState.y, 0));
+
+
+    }
+
     public override string Test()
     {
-        return "Henlo world";
+        return "QLEARNING TEST";
     }
 
 
