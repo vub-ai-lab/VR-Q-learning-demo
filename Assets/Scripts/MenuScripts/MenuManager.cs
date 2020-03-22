@@ -54,6 +54,7 @@ public class MenuManager : MonoBehaviour
         currentPanel.Show();
     }
 
+    //Load the maze scene
     private void ToMaze()
     {
 
@@ -61,16 +62,32 @@ public class MenuManager : MonoBehaviour
 
     }
 
+    //Send the selected algorithm to the agent
     public void LoadQlearning()
-    {
-        //Send the selected algorithm to the agent
+    {     
         UnityEngine.PlayerPrefs.SetString("Algorithm", "Qlearning");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
+        ToMaze();
+    }
+
+    public void LoadQlearningSoftmax()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "Qlearning");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
         ToMaze();
     }
 
     public void LoadSarsa()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "SARSA");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
+        ToMaze();
+    }
+
+    public void LoadSarsaSoftmax()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "SARSA");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
         ToMaze();
     }
 }

@@ -272,10 +272,41 @@ public class GridWorldGUI : MonoBehaviour
         }
     }
 
+    private void DisablePolicySliders()
+    {
+        // get available actions
+        List<Action> actions = env.getActions(env.getCurrentState());
+
+        // Disable sliders
+        foreach (Action action in actions)
+        {
+            sliders[(int)action].gameObject.SetActive(false);
+        }
+
+    }
+
     public void AddPolicySliders()
     {
         UpdatePolicySliders(this, new DestinationMarkerEventArgs());
         teleporter.Teleported += UpdatePolicySliders;
+    }
+
+    public void RemovePolicySliders()
+    {
+        DisablePolicySliders();
+        teleporter.Teleported -= UpdatePolicySliders;
+    }
+
+    public void ToggleSliders(bool toggled)
+    {
+        if (toggled)
+        {
+            AddPolicySliders();
+        }
+        else
+        {
+            RemovePolicySliders();
+        }
     }
 
     // Because we use this method as a VRTK teleport event we need the given signature

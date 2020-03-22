@@ -14,18 +14,19 @@ abstract public class Algorithm : MonoBehaviour
     // Algorithm parameters
     // These are adjustable in a GUI menu
     [Range(0f, 1f)]
-    protected float learning_rate = 0.4f; // The rate at which to update the value estimates given a reward.
+    protected float learning_rate = 0.9f; // The rate at which to update the value estimates given a reward.
     [Range(0f, 1f)]
     protected float discount_factor = 0.9f; // Discount factor for calculating Q-target.
     [Range(0f, 1f)]
     protected float trace_decay = 0.8f; // Factor Lambda to decrease eligibility traces
-
     [Range(0f, 1f)]
-    protected float Epsylon = 0f; // Chance for exploration
+    protected float epsylon = 0f; // Chance for exploration
+
+    protected float temperature = 0f; // value in the softmax policy
 
     // Learning Memory
     protected Vector2Int lastState;
-    protected Dictionary<Action, float>[,] q_table;   // The matrix containing the q-value estimates.
+    public Dictionary<Action, float>[,] q_table;   // The matrix containing the q-value estimates.
     protected Dictionary<Action, float>[,] traces;  // Matrix containing the eligibility traces
 
     // Environment
@@ -89,6 +90,34 @@ abstract public class Algorithm : MonoBehaviour
         }
     }
 
+    public float Epsylon
+    {
+        get
+        {
+            return epsylon;
+        }
+
+        set
+        {
+            epsylon = value;
+            Debug.Log("Set new epsylon");
+        }
+    }
+
+    public float Temperature
+    {
+        get
+        {
+            return temperature;
+        }
+
+        set
+        {
+            temperature = value;
+            Debug.Log("Set new termperature");
+        }
+    }
+
     public float GetStateValue(Vector2Int state)
     {
         // we assume a greedy policy
@@ -112,41 +141,7 @@ abstract public class Algorithm : MonoBehaviour
         return q_table[state.x, state.y][action];
     }
 
-    public float GetPickChance(Vector2Int state, Action selectedAction, List<Action> actions)
-    {
-
-        List<Action> maxList = new List<Action>();
-        float maxVal = q_table[state.x, state.y].Values.Max();
-
-        //Construct list of maximum Qvalues
-        foreach (Action action in actions)
-        {
-            if (q_table[state.x, state.y][action] == maxVal)
-            {
-                maxList.Add(action);
-            }
-        }
-
-        if (maxList.Count == actions.Count) //In case the Qvalue for every state action pair is equal
-        {
-            return 1.0f / maxList.Count;
-        }
-        else if (maxList.Contains(selectedAction))
-        {
-            return (1.0f - Epsylon) / maxList.Count;
-        }
-        else
-        {
-            return Epsylon / (actions.Count - maxList.Count);
-        }
-
-    }
-
-
     public abstract void UpdateValues(Action action, Vector2Int nextState, float reward, bool terminal);
-
-    public abstract string Test();
-
 
     public abstract void Initialize();
 

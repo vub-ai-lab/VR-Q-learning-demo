@@ -44,17 +44,12 @@ public class QlearningWtraces : Algorithm
         traces = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
         ClearMemory();
         lastState = env.getCurrentState();
+        envGUI.AddPolicySliders();
 
         // FIXME VRTK teleporter would be preferred here but headset happens not to be enable when this is executed
         transform.localPosition = envGUI.tilemap.GetCellCenterWorld(new Vector3Int(lastState.x, lastState.y, 0));
-
+        
 
     }
-
-    public override string Test()
-    {
-        return "QLEARNING TEST";
-    }
-
 
 }

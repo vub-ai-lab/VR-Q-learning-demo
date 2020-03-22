@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 using Action = Enums.Action;
 using VRTK;
@@ -19,6 +20,17 @@ public class Agent : MonoBehaviour
     public SARSA sarsa;
     private String algorithmType;
     private Algorithm algorithm;
+
+    //Policies
+    public Softmax softmax;
+    public Egreedy egreedy;
+    private String policyType;
+    private Policy policy;
+
+    //Textfields
+    public Text AlgorithmName;
+    public Text PolicyName;
+
 
     public float Learning_rate
     {
@@ -62,6 +74,33 @@ public class Agent : MonoBehaviour
         }
     }
 
+    public float Epsylon
+    {
+        get
+        {
+            return algorithm.Epsylon;
+        }
+
+        set
+        {
+            algorithm.Epsylon = value;
+            Debug.Log("Set new epsylon");
+        }
+    }
+
+    public float Temperature
+    {
+        get
+        {
+            return algorithm.Temperature;
+        }
+
+        set
+        {
+            algorithm.Temperature = value;
+            Debug.Log("Set new temperature");
+        }
+    }
     /// <summary>
     /// Gets the current Estimate of the State Value
     /// </summary>
@@ -90,7 +129,7 @@ public class Agent : MonoBehaviour
 
     public float GetPickChance(Vector2Int state, Action selectedAction, List<Action> actions)
     {
-        return algorithm.GetPickChance(state, selectedAction, actions);
+        return policy.GetPickChance(algorithm.q_table[state.x, state.y], selectedAction, actions, algorithm.Epsylon, algorithm.Temperature);
     }
 
     /// <summary>
@@ -168,29 +207,46 @@ public class Agent : MonoBehaviour
     void Start()
     {
 
-
         // Get the algorithm the user selected in the StartMenu
         algorithmType = UnityEngine.PlayerPrefs.GetString("Algorithm");
-        //PlayerPrefs.DeleteAll();
 
         switch (algorithmType)
         {
             case "Qlearning":
                 algorithm = qlearningWtraces;
+                AlgorithmName.text = "Qlearning";
                 Debug.Log("LoadedQlearning");
                 break;
             case "SARSA":
                 algorithm = sarsa;
+                AlgorithmName.text = "SARSA";
                 Debug.Log("Loaded SARSA");
                 break;
         }
 
+        //Get the policy the user selected in the StartMenu
+        policyType = UnityEngine.PlayerPrefs.GetString("Policy");
+        switch(policyType)
+        {
+            case "Egreedy":
+                policy = egreedy;
+                PolicyName.text = "ε-greedy";
+                Debug.Log("Loaded egreedy");
+                break;
+            case "Softmax":
+                policy = softmax;
+                PolicyName.text = "Softmax";
+                Debug.Log("Loaded softmax");
+                break;
+        }
 
         algorithm.Initialize();
-
-        Debug.Log(algorithm.Test());
     }
 
+    public void InitializeMenu()
+    {
+        policy.prepareSettingsMenu();
+    }
 
     public void ClearMemory()
     {
@@ -222,6 +278,11 @@ public class Agent : MonoBehaviour
     public void ResetEpisode()
     {
         algorithm.ResetEpisode();
+    }
+
+    public void BackToMenu()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("StartMenu");
     }
 }
 

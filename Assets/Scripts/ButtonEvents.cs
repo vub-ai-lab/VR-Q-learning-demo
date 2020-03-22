@@ -9,6 +9,7 @@ public class ButtonEvents : MonoBehaviour {
     public Agent agent;
 
     public static bool disabled = false;
+    public static bool menuInitialized = false;
 
 	// This will get called by Unity when the demo is loaded
     void OnEnable()
@@ -31,6 +32,9 @@ public class ButtonEvents : MonoBehaviour {
         controllerEvents.ButtonTwoPressed -= ControllerEvents_ButtonTwoPressed;
 		controllerEvents.TriggerClicked -= ControllerEvents_TriggerClicked;
 		GridWorld.OnGoalReached -= EnvEvents_GoalReached;
+        // Reset booleans
+        disabled = false;
+        menuInitialized = false;
 		// Trigger clicks do not work with keyboard events in the simulator.
 		//#if DEBUG
 		//controllerEvents.TriggerPressed -= ControllerEvents_TriggerClicked;
@@ -47,7 +51,15 @@ public class ButtonEvents : MonoBehaviour {
     private void ControllerEvents_GripReleased(object sender, ControllerInteractionEventArgs e)
     {
 		disabled = !disabled;
-		menu.SetActive(disabled);
+        menu.SetActive(disabled);
+        if (!menuInitialized)
+        {
+            agent.InitializeMenu();
+            menuInitialized = true;
+        }
+
+ 
+
     }
 
 	private void ControllerEvents_TriggerClicked(object sender, ControllerInteractionEventArgs e)

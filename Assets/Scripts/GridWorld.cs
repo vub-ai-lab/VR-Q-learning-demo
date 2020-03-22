@@ -167,6 +167,12 @@ public class GridWorld : MonoBehaviour {
 			return 0; 
 	}
 
+    public Vector2Int GetNeighbor(Action action)
+    {
+        return currentState.getNeighbor(action).getPosition();
+    }
+
+
     public List<Action> getActions(Vector2Int state)
     {
 		Node node = nodes [state.y][state.x];
