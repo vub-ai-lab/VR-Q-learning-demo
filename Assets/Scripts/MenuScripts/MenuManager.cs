@@ -62,7 +62,7 @@ public class MenuManager : MonoBehaviour
 
     }
 
-    //Send the selected algorithm to the agent
+    //Send the selected algorithm and policy to the agent
     public void LoadQlearning()
     {     
         UnityEngine.PlayerPrefs.SetString("Algorithm", "Qlearning");
@@ -87,6 +87,20 @@ public class MenuManager : MonoBehaviour
     public void LoadSarsaSoftmax()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "SARSA");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
+        ToMaze();
+    }
+
+    public void LoadExpectedSarsa()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "ExpectedSARSA");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
+        ToMaze();
+    }
+
+    public void LoadExpectedSarsaSoftmax()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "ExpectedSARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
         ToMaze();
     }

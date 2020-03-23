@@ -49432,6 +49432,7 @@ GameObject:
   - component: {fileID: 630170864}
   - component: {fileID: 630170866}
   - component: {fileID: 630170867}
+  - component: {fileID: 630170865}
   m_Layer: 0
   m_Name: Agent
   m_TagString: Untagged
@@ -49453,6 +49454,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   qlearningWtraces: {fileID: 630170863}
   sarsa: {fileID: 630170864}
+  expectedSarsa: {fileID: 630170865}
   softmax: {fileID: 630170867}
   egreedy: {fileID: 630170866}
   AlgorithmName: {fileID: 1741389461}
@@ -49506,6 +49508,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   env: {fileID: 1773603326}
   envGUI: {fileID: 1773603327}
+--- !u!114 &630170865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 630170860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16381e34dcb46eb4e8e6e3684c4a1600, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  env: {fileID: 1773603326}
+  envGUI: {fileID: 1773603327}
+  agent: {fileID: 630170861}
 --- !u!114 &630170866
 MonoBehaviour:
   m_ObjectHideFlags: 0

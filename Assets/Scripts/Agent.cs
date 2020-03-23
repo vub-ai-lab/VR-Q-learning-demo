@@ -18,6 +18,7 @@ public class Agent : MonoBehaviour
     // Algorithms
     public QlearningWtraces qlearningWtraces;
     public SARSA sarsa;
+    public ExpectedSARSA expectedSarsa;
     private String algorithmType;
     private Algorithm algorithm;
 
@@ -159,10 +160,6 @@ public class Agent : MonoBehaviour
         bool done = env.isTerminal();
 
         algorithm.UpdateValues(action, nextState, reward, done);
-
-        // UpdateQTable(algorithm.LastState, action, nextState, reward, done);
-        //algorithm.LastState = nextState;
-
         return true;
     }
 
@@ -221,6 +218,11 @@ public class Agent : MonoBehaviour
                 algorithm = sarsa;
                 AlgorithmName.text = "SARSA";
                 Debug.Log("Loaded SARSA");
+                break;
+            case "ExpectedSARSA":
+                algorithm = expectedSarsa;
+                AlgorithmName.text = "E. SARSA";
+                Debug.Log("Loaded Expected SARSA");
                 break;
         }
 

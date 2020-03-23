@@ -20,7 +20,7 @@ abstract public class Algorithm : MonoBehaviour
     [Range(0f, 1f)]
     protected float trace_decay = 0.8f; // Factor Lambda to decrease eligibility traces
     [Range(0f, 1f)]
-    protected float epsylon = 0f; // Chance for exploration
+    protected float epsylon = 0.2f; // Chance for exploration
 
     protected float temperature = 0f; // value in the softmax policy
 

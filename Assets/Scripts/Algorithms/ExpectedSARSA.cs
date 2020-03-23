@@ -7,22 +7,16 @@ using UnityEngine;
 using Action = Enums.Action;
 using VRTK;
 
-public class SARSA : Algorithm
+public class ExpectedSARSA : Algorithm
 {
 
+    public Agent agent;
 
-    // Learning memory
-    private Vector2Int prevState;
-
-    private Action prevAction;
-
-    private float prevReward;
-
-    private void UpdateQTable(Vector2Int state, Action firstAction, Action secondAction, Vector2Int nextState, float reward, bool terminal)
+    private void UpdateQTable(Vector2Int state, Action action, Vector2Int nextState, float reward, bool terminal)
     {
-        float blop = terminal ? 0 : discount_factor * q_table[nextState.x, nextState.y][secondAction];
-        float delta = reward + blop - q_table[state.x, state.y][firstAction];
-        traces[state.x, state.y][firstAction] = 1;
+        float blop = terminal ? 0 : discount_factor * expectedSum(nextState);
+        float delta = reward + blop - q_table[state.x, state.y][action];
+        traces[state.x, state.y][action] = 1;
         for (int x = 0; x < env.gridSizeX; x++)
         {
             for (int y = 0; y < env.gridSizeY; y++)
@@ -36,24 +30,25 @@ public class SARSA : Algorithm
         }
     }
 
+    private float expectedSum(Vector2Int state)
+    {
+        float sum = 0;
+        List<Action> actions = env.getActions(state);
+
+        foreach (Action action in actions)
+        {
+            sum += agent.GetPickChance(state, action, actions) * q_table[state.x, state.y][action];
+        }
+
+        return sum;
+    }
 
 
     public override void UpdateValues(Action action, Vector2Int nextState, float reward, bool terminal)
     {
-        if (prevState[0] > 0)
-        {
-            UpdateQTable(prevState, prevAction, action, lastState, prevReward, false);
-        }
-
-        prevReward = reward;
-        prevState = lastState;
+        UpdateQTable(lastState, action, nextState, reward, terminal);
         lastState = nextState;
-        prevAction = action;
 
-        if (terminal)
-        {
-            UpdateQTable(prevState, prevAction, action, lastState, prevReward, true);
-        }
     }
 
     public override void Initialize()
@@ -64,15 +59,11 @@ public class SARSA : Algorithm
         traces = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
         ClearMemory();
         lastState = env.getCurrentState();
-        //prevState is still non existant
-        prevState.Set(-1, -1);
         envGUI.AddPolicySliders();
 
         // FIXME VRTK teleporter would be preferred here but headset happens not to be enable when this is executed
         transform.localPosition = envGUI.tilemap.GetCellCenterWorld(new Vector3Int(lastState.x, lastState.y, 0));
 
+
     }
-
-
-
 }
