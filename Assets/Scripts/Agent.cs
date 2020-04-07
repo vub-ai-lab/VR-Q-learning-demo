@@ -11,7 +11,7 @@ using VRTK;
 
 
 [Serializable]
-public class Agent : MonoBehaviour
+abstract public class Agent : MonoBehaviour
 {
 
 
@@ -19,19 +19,22 @@ public class Agent : MonoBehaviour
     public QlearningWtraces qlearningWtraces;
     public SARSA sarsa;
     public ExpectedSARSA expectedSarsa;
-    private String algorithmType;
-    private Algorithm algorithm;
+    protected String algorithmType;
+    protected Algorithm algorithm;
 
     //Policies
     public Softmax softmax;
     public Egreedy egreedy;
-    private String policyType;
-    private Policy policy;
+    protected String policyType;
+    protected Policy policy;
 
     //Textfields
     public Text AlgorithmName;
     public Text PolicyName;
 
+    //Environment
+    public GridWorld env;
+    public GridWorldGUI envGUI;
 
     public float Learning_rate
     {
@@ -141,109 +144,18 @@ public class Agent : MonoBehaviour
     /// <param name="done">Whether the episode has ended</param>
 
     // Handle player movement
-    private bool Act(Action action)
-    {
-        GridWorld env = algorithm.env;
+    protected abstract bool Act(Action action);
 
-        float reward;
-        try
-        {
-            reward = env.Step(action);
-        }
-        catch (InvalidOperationException e)
-        {
-            Debug.Log("Action invalid");
-            return false;
-        }
-        Debug.Log("Received reward: " + reward.ToString());
-        Vector2Int nextState = env.getCurrentState();
-        bool done = env.isTerminal();
+    public abstract void MoveForward();
 
-        algorithm.UpdateValues(action, nextState, reward, done);
-        return true;
-    }
+    public abstract void MoveBackward();
 
-    private void WalkUntilCrossing(Action chosen_action, Action crossing_action1, Action crossing_action2)
-    {
-        GridWorld env = algorithm.env;
-        GridWorldGUI envGUI = algorithm.envGUI;
-        Vector2Int prevState = algorithm.LastState;
+    public abstract void MoveLeft();
 
-        while (Act(chosen_action))
-        {
-            var actions = env.getActions(env.getCurrentState());
-            if (actions.Contains(crossing_action1) ||
-                actions.Contains(crossing_action2))
-                break;
-        }
-
-        envGUI.moveAgentInGameWorld(prevState, algorithm.LastState);
-    }
+    public abstract void MoveRight();
 
 
-    public void MoveForward()
-    {
-        WalkUntilCrossing(Action.up, Action.left, Action.right);
-    }
-
-    public void MoveBackward()
-    {
-        WalkUntilCrossing(Action.down, Action.left, Action.right);
-    }
-
-    public void MoveLeft()
-    {
-        WalkUntilCrossing(Action.left, Action.up, Action.down);
-    }
-
-    public void MoveRight()
-    {
-        WalkUntilCrossing(Action.right, Action.up, Action.down);
-    }
-
-    void Start()
-    {
-
-        // Get the algorithm the user selected in the StartMenu
-        algorithmType = UnityEngine.PlayerPrefs.GetString("Algorithm");
-
-        switch (algorithmType)
-        {
-            case "Qlearning":
-                algorithm = qlearningWtraces;
-                AlgorithmName.text = "Qlearning";
-                Debug.Log("LoadedQlearning");
-                break;
-            case "SARSA":
-                algorithm = sarsa;
-                AlgorithmName.text = "SARSA";
-                Debug.Log("Loaded SARSA");
-                break;
-            case "ExpectedSARSA":
-                algorithm = expectedSarsa;
-                AlgorithmName.text = "E. SARSA";
-                Debug.Log("Loaded Expected SARSA");
-                break;
-        }
-
-        //Get the policy the user selected in the StartMenu
-        policyType = UnityEngine.PlayerPrefs.GetString("Policy");
-        switch(policyType)
-        {
-            case "Egreedy":
-                policy = egreedy;
-                PolicyName.text = "ε-greedy";
-                Debug.Log("Loaded egreedy");
-                break;
-            case "Softmax":
-                policy = softmax;
-                PolicyName.text = "Softmax";
-                Debug.Log("Loaded softmax");
-                break;
-        }
-
-        algorithm.Initialize();
-    }
+    abstract public void Start();
 
     public void InitializeMenu()
     {
@@ -280,6 +192,11 @@ public class Agent : MonoBehaviour
     public void ResetEpisode()
     {
         algorithm.ResetEpisode();
+    }
+
+    public void ResetPosition()
+    {
+        algorithm.ResetPosition();
     }
 
     public void BackToMenu()

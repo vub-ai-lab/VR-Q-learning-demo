@@ -62,6 +62,11 @@ public class MenuManager : MonoBehaviour
 
     }
 
+    private void ToIceLake()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("IceLake");
+    }
+
     //Send the selected algorithm and policy to the agent
     public void LoadQlearning()
     {     
@@ -103,5 +108,19 @@ public class MenuManager : MonoBehaviour
         UnityEngine.PlayerPrefs.SetString("Algorithm", "ExpectedSARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
         ToMaze();
+    }
+    
+    public void LoadnStepSarsa()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepSARSA");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
+        ToIceLake();
+    } 
+
+    public void LoadnStepOffpolicySarsa()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepOffpolicySARSA");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
+        ToIceLake();
     }
 }

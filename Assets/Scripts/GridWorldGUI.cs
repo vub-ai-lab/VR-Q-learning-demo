@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using VRTK;
 
-public class GridWorldGUI : MonoBehaviour
+abstract public class GridWorldGUI : MonoBehaviour
 {
     public GridWorld env;
     public Agent agent;
@@ -24,46 +24,25 @@ public class GridWorldGUI : MonoBehaviour
     public GameObject popUpMenu;
 
     // UI vars
-    private Text[] texts;
-    private Button[] buttons;
-    private Slider[] sliders;
-    private List<GameObject> chests;
-    private Dictionary<Action, GameObject>[,] trace_cones;
+    protected Text[] texts;
+    protected Button[] buttons;
+    protected Slider[] sliders;
+    protected List<GameObject> chests;
+    protected Dictionary<Action, GameObject>[,] trace_cones;
 
     public static bool showQtable = true;
     public static bool showTraces = true;
 
-    private void InitGridGUI()
-    {
-        for (var y = 0; y < env.gridSizeY; ++y)
-        {
-            for (var x = 0; x < env.gridSizeX; ++x)
-            {
-                if (env.getLabyrinth(x, y) == GridWorld.wallChar)
-                    makeWall(x, y);
-                else
-                {
-                    if (env.chestChars.Contains(env.getLabyrinth(x, y)))
-                    {
-                        GameObject chest = makeChest(x, y, env.getLabyrinth(x, y));
-                        chests.Add(chest);
-                        env.addChest(x, y, chest);
-                    }
-                    SetTile(x, y);
-                    SetTraceCones(x, y);
-                }
-            }
-        }
-    }
+    protected abstract void InitGridGUI();
 
-    private void SetTile(int x, int y)
+    protected void SetTile(int x, int y)
     {
         Vector3Int position = new Vector3Int(x, y, 0);
         tilemap.SetTileFlags(position, TileFlags.None);
         tilemap.SetColor(position, Color.black);
     }
 
-    private void SetTraceCones(int x, int y)
+    protected void SetTraceCones(int x, int y)
     {
         Vector2Int position = new Vector2Int(x, y);
         List<Action> actions = env.getActions(position);
@@ -76,7 +55,7 @@ public class GridWorldGUI : MonoBehaviour
         trace_cones[x, y] = dict;
     }
 
-    private GameObject Cone(Vector2Int state, Action act)
+    protected GameObject Cone(Vector2Int state, Action act)
     {
         GameObject cone = (GameObject)Instantiate(Resources.Load("Cone"));
         float trace_val = agent.GetTraceValue(state, act);
@@ -114,7 +93,7 @@ public class GridWorldGUI : MonoBehaviour
         return cone;
     }
 
-    public void makeWall(int x, int y)
+    protected void makeWall(int x, int y)
     {
         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
         cube.transform.position = tilemap.GetCellCenterWorld(new Vector3Int(x, y, 0)) + new Vector3(0, 2.5f, 0);
@@ -123,7 +102,7 @@ public class GridWorldGUI : MonoBehaviour
         cube.GetComponent<Renderer>().material = newMat;
     }
 
-    public GameObject makeChest(int x, int y, char chest_char)
+    protected GameObject makeChest(int x, int y, char chest_char)
     {
         GameObject chest;
         // Chest type
@@ -155,39 +134,22 @@ public class GridWorldGUI : MonoBehaviour
         return chest;
     }
 
-    public void moveAgentInGameWorld(Vector2Int from_pos, Vector2Int to_pos, bool teleport = false)
-    {
+    public abstract void moveAgentInGameWorld(Vector2Int from_pos, Vector2Int to_pos, bool teleport = false);
 
-        Debug.Log("MOVE TO" + to_pos);
-        GameObject from_chest = env.getChest(from_pos);
-        if (from_chest != null)
-            StartCoroutine(InteractWithChest(from_chest));
-        GameObject to_chest = env.getChest(to_pos);
-        if (to_chest != null)
-            StartCoroutine(InteractWithChest(to_chest));
-
-        Vector3 destination = tilemap.GetCellCenterWorld(new Vector3Int(to_pos.x, to_pos.y, 0));
-
-        if (teleport)
-            teleporter.ForceTeleport(destination);
-        else
-            teleporter.Teleport(agent.transform, destination, null, true); // This flies
-    }
-
-    private IEnumerator InteractWithChest(GameObject chest)
+    protected IEnumerator InteractWithChest(GameObject chest)
     {
         yield return new WaitForSeconds(0.1f);
         Animator anim = chest.GetComponent<Animator>();
         anim.SetBool("open", !anim.GetBool("open"));
     }
 
-    private void Visualise(object sender, DestinationMarkerEventArgs e)
+    protected void Visualise(object sender, DestinationMarkerEventArgs e)
     {
         VisualiseQTable();
         VisualiseTraces();
     }
 
-    private void VisualiseQTable()
+    protected void VisualiseQTable()
     {
         if (showQtable)
         {
@@ -204,7 +166,7 @@ public class GridWorldGUI : MonoBehaviour
         }
     }
 
-    private void VisualiseTraces()
+    protected void VisualiseTraces()
     {
         if (showTraces)
         {
@@ -239,7 +201,7 @@ public class GridWorldGUI : MonoBehaviour
 
     }
 
-    private void UpdatePolicySliders(object sender, DestinationMarkerEventArgs e)
+    protected void UpdatePolicySliders(object sender, DestinationMarkerEventArgs e)
     {
         // get available actions
         List<Action> actions = env.getActions(env.getCurrentState());
@@ -272,7 +234,7 @@ public class GridWorldGUI : MonoBehaviour
         }
     }
 
-    private void DisablePolicySliders()
+    protected void DisablePolicySliders()
     {
         // get available actions
         List<Action> actions = env.getActions(env.getCurrentState());
@@ -403,5 +365,10 @@ public class GridWorldGUI : MonoBehaviour
             anim.SetBool("open", false);
         }
 
+    }
+
+    public void ResetPosition()
+    {
+        env.ResetPosition();
     }
 }

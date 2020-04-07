@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/main.unity
     guid: 0281c34dcbf1dc84bb23007158048858
+  - enabled: 1
+    path: Assets/IceLake.unity
+    guid: 465d3f3dbe8028749a6906ddbe9c27fe
   m_configObjects: {}

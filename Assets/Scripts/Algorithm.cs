@@ -30,8 +30,11 @@ abstract public class Algorithm : MonoBehaviour
     protected Dictionary<Action, float>[,] traces;  // Matrix containing the eligibility traces
 
     // Environment
-    public GridWorld env;
-    public GridWorldGUI envGUI;
+    public Agent agent;
+    //protected GridWorld env;
+   // protected GridWorldGUI envGUI;
+
+
 
     public Vector2Int LastState
     {
@@ -147,11 +150,11 @@ abstract public class Algorithm : MonoBehaviour
 
     protected void ClearQtable()
     {
-        for (int x = 0; x < env.gridSizeX; x++)
+        for (int x = 0; x < agent.env.gridSizeX; x++)
         {
-            for (int y = 0; y < env.gridSizeY; y++)
+            for (int y = 0; y < agent.env.gridSizeY; y++)
             {
-                List<Action> actions = env.getActions(new Vector2Int(x, y));
+                List<Action> actions = agent.env.getActions(new Vector2Int(x, y));
                 Dictionary<Action, float> dict = new Dictionary<Enums.Action, float>();
 
                 foreach (Action a in actions)
@@ -164,11 +167,11 @@ abstract public class Algorithm : MonoBehaviour
 
     protected void ClearTraces()
     {
-        for (int x = 0; x < env.gridSizeX; x++)
+        for (int x = 0; x < agent.env.gridSizeX; x++)
         {
-            for (int y = 0; y < env.gridSizeY; y++)
+            for (int y = 0; y < agent.env.gridSizeY; y++)
             {
-                List<Action> actions = env.getActions(new Vector2Int(x, y));
+                List<Action> actions = agent.env.getActions(new Vector2Int(x, y));
                 Dictionary<Action, float> dict = new Dictionary<Enums.Action, float>();
 
                 foreach (Action a in actions)
@@ -195,9 +198,17 @@ abstract public class Algorithm : MonoBehaviour
     public void ResetEpisode()
     {
         ClearTraces();
-        envGUI.ResetEpisode();
-        lastState = env.getCurrentState();
-        envGUI.moveAgentInGameWorld(lastState, lastState, true);
+        agent.envGUI.ResetEpisode();
+        lastState = agent.env.getCurrentState();
+        agent.envGUI.moveAgentInGameWorld(lastState, lastState, true);
+    }
+
+    public void ResetPosition()
+    {
+        ClearTraces();
+        agent.envGUI.ResetPosition();
+        lastState = agent.env.getCurrentState();
+        agent.envGUI.moveAgentInGameWorld(lastState, lastState, true);
     }
 
 }

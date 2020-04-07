@@ -23,9 +23,9 @@ public class SARSA : Algorithm
         float blop = terminal ? 0 : discount_factor * q_table[nextState.x, nextState.y][secondAction];
         float delta = reward + blop - q_table[state.x, state.y][firstAction];
         traces[state.x, state.y][firstAction] = 1;
-        for (int x = 0; x < env.gridSizeX; x++)
+        for (int x = 0; x < agent.env.gridSizeX; x++)
         {
-            for (int y = 0; y < env.gridSizeY; y++)
+            for (int y = 0; y < agent.env.gridSizeY; y++)
             {
                 foreach (Action a in new List<Action>(q_table[x, y].Keys))
                 {
@@ -60,16 +60,16 @@ public class SARSA : Algorithm
     {
 
 
-        q_table = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
-        traces = new Dictionary<Action, float>[env.gridSizeX, env.gridSizeY];
+        q_table = new Dictionary<Action, float>[agent.env.gridSizeX, agent.env.gridSizeY];
+        traces = new Dictionary<Action, float>[agent.env.gridSizeX, agent.env.gridSizeY];
         ClearMemory();
-        lastState = env.getCurrentState();
+        lastState = agent.env.getCurrentState();
         //prevState is still non existant
         prevState.Set(-1, -1);
-        envGUI.AddPolicySliders();
+        agent.envGUI.AddPolicySliders();
 
         // FIXME VRTK teleporter would be preferred here but headset happens not to be enable when this is executed
-        transform.localPosition = envGUI.tilemap.GetCellCenterWorld(new Vector3Int(lastState.x, lastState.y, 0));
+        transform.localPosition = agent.envGUI.tilemap.GetCellCenterWorld(new Vector3Int(lastState.x, lastState.y, 0));
 
     }
 
