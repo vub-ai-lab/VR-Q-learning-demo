@@ -55,14 +55,14 @@ public class MenuManager : MonoBehaviour
     }
 
     //Load the maze scene
-    private void ToMaze()
+    public void ToMaze()
     {
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("main");
 
     }
 
-    private void ToIceLake()
+    public void ToIceLake()
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene("IceLake");
     }
@@ -72,55 +72,48 @@ public class MenuManager : MonoBehaviour
     {     
         UnityEngine.PlayerPrefs.SetString("Algorithm", "Qlearning");
         UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
-        ToMaze();
     }
 
     public void LoadQlearningSoftmax()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "Qlearning");
         UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
-        ToMaze();
     }
 
     public void LoadSarsa()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "SARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
-        ToMaze();
     }
 
     public void LoadSarsaSoftmax()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "SARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
-        ToMaze();
     }
 
     public void LoadExpectedSarsa()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "ExpectedSARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
-        ToMaze();
     }
 
     public void LoadExpectedSarsaSoftmax()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "ExpectedSARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
-        ToMaze();
     }
     
     public void LoadnStepSarsa()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepSARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
-        ToIceLake();
-    } 
+    }
+    
 
     public void LoadnStepOffpolicySarsa()
     {
         UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepOffpolicySARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
-        ToIceLake();
     }
 }

@@ -96,6 +96,11 @@ public class MazeAgent : Agent
                 AlgorithmName.text = "E. SARSA";
                 Debug.Log("Loaded Expected SARSA");
                 break;
+            case "nstepSARSA":
+                algorithm = nstepSARSA;
+                AlgorithmName.text = "ns SARSA";
+                Debug.Log("Loaded n-step SARSA");
+                break;
         }
 
         //Get the policy the user selected in the StartMenu

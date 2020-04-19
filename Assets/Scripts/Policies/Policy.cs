@@ -10,6 +10,6 @@ public abstract class Policy : MonoBehaviour
 
     public abstract float GetPickChance(Dictionary<Action, float> q_table, Action selectedAction, List<Action> actions, float epsylon, float temperature);
 
-    public abstract void prepareSettingsMenu();
+    public abstract void prepareSettingsMenu(string algorithm);
 
 }

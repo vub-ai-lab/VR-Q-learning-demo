@@ -62,7 +62,6 @@ abstract public class GridWorld : MonoBehaviour
         return lake[lakeY][x];
     }
 
-
     public static char wallChar = 'x';
     public static char floorChar = '.';
     public static char startChar = 's';
@@ -81,6 +80,8 @@ abstract public class GridWorld : MonoBehaviour
 
     protected List<Node> startNodes = new List<Node>();
     protected List<Node> holes = new List<Node>();
+
+    //Random number generator
     protected static System.Random rnd = new System.Random();
 
     public delegate void EnvEvent();
@@ -200,6 +201,53 @@ abstract public class GridWorld : MonoBehaviour
         else
             // By default we give zero reward
             return 0;
+    }
+
+    public int DetermineSteps(Action action)
+    {
+        /*Determine if the user should slip or not
+        * 0 = don't slip
+        * 1 = slip a random amount of square
+        */
+        int slip = 1;
+       
+        int steps = 0;
+
+        //If the users slips, determine how far he slips
+        if (slip > 0)
+        {
+            int remainder = 0;
+
+            switch ((int)action)
+            {
+                case 0:
+                    remainder = gridSizeY - currentState.getPosition()[1] - 1;
+                    break;
+                case 1:
+                    remainder = currentState.getPosition()[1];
+                    break;
+                case 2:
+                    remainder = currentState.getPosition()[0];
+                    break;
+                case 3:
+                    remainder = gridSizeX - currentState.getPosition()[0] - 1;
+                    break;
+            }
+
+            Debug.Log("REMAINDER:" + remainder);
+            if(remainder > 2)
+            {
+                steps = rnd.Next(2);
+            }
+            else
+            {
+                steps = remainder-1;
+            }
+
+        }
+
+        Debug.Log(steps);
+        return steps; 
     }
 
     public Vector2Int GetNeighbor(Action action)

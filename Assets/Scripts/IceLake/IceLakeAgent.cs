@@ -14,8 +14,7 @@ using VRTK;
 public class IceLakeAgent : Agent
 {
 
-    //Random number generator
-    protected static System.Random rnd = new System.Random();
+    private int steps = 0;
 
     // Handle player movement
     protected override bool Act(Action action)
@@ -35,7 +34,16 @@ public class IceLakeAgent : Agent
         Vector2Int nextState = env.getCurrentState();
         bool done = env.isTerminal();
 
-        algorithm.UpdateValues(action, nextState, reward, done);
+        //algorithm.UpdateValues(action, nextState, reward, done);
+        
+        
+        if(steps == 0)
+        {
+            Debug.Log("UPDATED VALUES");
+            algorithm.UpdateValues(action, nextState, reward, done);
+        }
+        
+
         return true;
     }
 
@@ -43,40 +51,32 @@ public class IceLakeAgent : Agent
     private void WalkOrSlip(Action chosen_action)
     {
         Vector2Int prevState = algorithm.LastState;
-        int steps = 0;
 
-        /*Determine if the user should slip or not
-         * 0 = don't slip
-         * 1 = slip a random amount of square
-         */
-        int slip = rnd.Next(2);
+        //Let the environment determine how many steps the agent will take
+        steps = env.DetermineSteps(chosen_action);
 
-        if (slip > 0)
-            if(rnd.Next(2) > 0)
-            {
-                steps = 1;
-            } else
-            {
-                steps = 2;
-            }
-
-
-        while (Act(chosen_action))
+        if(steps >= 0)
         {
+            while (Act(chosen_action))
+            {
 
-            if (steps == 0)
-            {
-                break;
+                if (steps == 0)
+                {
+                    break;
+                }
+                else
+                {
+                    steps -= 1;
+                }
+
             }
-            else
-            {
-                steps -= 1;
-            }
+
+            
 
         }
 
+        Debug.Log("MOVED");
         envGUI.moveAgentInGameWorld(prevState, algorithm.LastState);
-
     }
 
 
@@ -108,15 +108,20 @@ public class IceLakeAgent : Agent
 
         switch (algorithmType)
         {
-            case "nstepSARSA":
+            case "Qlearning":
                 algorithm = qlearningWtraces;
                 AlgorithmName.text = "Qlearning";
                 Debug.Log("LoadedQlearning");
                 break;
-            case "nstepOffpolicySARSA":
+            case "SARSA":
                 algorithm = sarsa;
                 AlgorithmName.text = "SARSA";
                 Debug.Log("Loaded SARSA");
+                break;
+            case "ExpectedSARSA":
+                algorithm = expectedSarsa;
+                AlgorithmName.text = "E. SARSA";
+                Debug.Log("Loaded Expected SARSA");
                 break;
         }
 
@@ -135,6 +140,7 @@ public class IceLakeAgent : Agent
                 Debug.Log("Loaded softmax");
                 break;
         }
+
 
         algorithm.Initialize();
     }

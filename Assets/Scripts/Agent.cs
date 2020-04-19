@@ -19,6 +19,7 @@ abstract public class Agent : MonoBehaviour
     public QlearningWtraces qlearningWtraces;
     public SARSA sarsa;
     public ExpectedSARSA expectedSarsa;
+    public NstepSARSA nstepSARSA;
     protected String algorithmType;
     protected Algorithm algorithm;
 
@@ -105,6 +106,21 @@ abstract public class Agent : MonoBehaviour
             Debug.Log("Set new temperature");
         }
     }
+
+    public float Nsteps
+    {
+        get
+        {
+            return algorithm.Nsteps;
+        }
+
+        set
+        {
+            algorithm.Nsteps = value;
+            Debug.Log("Set new nstep");
+        }
+    }
+
     /// <summary>
     /// Gets the current Estimate of the State Value
     /// </summary>
@@ -159,7 +175,7 @@ abstract public class Agent : MonoBehaviour
 
     public void InitializeMenu()
     {
-        policy.prepareSettingsMenu();
+        policy.prepareSettingsMenu(algorithmType);
     }
 
     public void ClearMemory()

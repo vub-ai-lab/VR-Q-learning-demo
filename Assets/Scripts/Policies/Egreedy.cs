@@ -40,9 +40,18 @@ public class Egreedy : Policy
     }
 
 
-    public override void prepareSettingsMenu()
+    public override void prepareSettingsMenu(string algorithm)
     {
-        string[] sliders = new string[] { "LRslider", "DFslider", "TDslider", "Eslider", "Ptoggle" };
+        string[] sliders;
+
+        if(algorithm == "nstepSARSA")
+        {
+            sliders = new string[] { "LRslider", "DFslider", "TDslider", "Eslider", "Nslider", "Ptoggle" };
+        } else
+        {
+            sliders = new string[] { "LRslider", "DFslider", "TDslider", "Eslider", "Ptoggle" };
+        }
+
         menu.InitializeMenu(sliders);
     }
 

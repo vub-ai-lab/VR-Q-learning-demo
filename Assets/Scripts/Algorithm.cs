@@ -24,6 +24,8 @@ abstract public class Algorithm : MonoBehaviour
 
     protected float temperature = 0f; // value in the softmax policy
 
+    protected float nsteps = 3f;
+
     // Learning Memory
     protected Vector2Int lastState;
     public Dictionary<Action, float>[,] q_table;   // The matrix containing the q-value estimates.
@@ -118,6 +120,20 @@ abstract public class Algorithm : MonoBehaviour
         {
             temperature = value;
             Debug.Log("Set new termperature");
+        }
+    }
+
+    public float Nsteps
+    {
+        get
+        {
+            return nsteps;
+        }
+
+        set
+        {
+            nsteps = value;
+            Debug.Log("Set new nsteps");
         }
     }
 

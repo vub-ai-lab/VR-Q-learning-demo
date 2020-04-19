@@ -4,13 +4,12 @@ using UnityEngine.UI;
 public class MenuCreator : MonoBehaviour
 {
 
-    public Canvas menu;
-
     private Slider LRslider;
     private Slider DFslider;
     private Slider TDslider;
     private Slider Eslider;
     private Slider Tslider;
+    private Slider Nslider;
     private Toggle Ptoggle;
     
 
@@ -22,6 +21,7 @@ public class MenuCreator : MonoBehaviour
         TDslider = GameObject.Find("LambdaSlider").GetComponent<Slider>();
         Eslider = GameObject.Find("EpsylonSlider").GetComponent<Slider>();
         Tslider = GameObject.Find("TemperatureSlider").GetComponent<Slider>();
+        Nslider = GameObject.Find("NstepSlider").GetComponent<Slider>();
         Ptoggle = GameObject.Find("PolicyIndicationToggle").GetComponent<Toggle>();
 
         // Deactivate all components
@@ -30,6 +30,7 @@ public class MenuCreator : MonoBehaviour
         TDslider.gameObject.SetActive(false);
         Eslider.gameObject.SetActive(false);
         Tslider.gameObject.SetActive(false);
+        Nslider.gameObject.SetActive(false);
         Ptoggle.gameObject.SetActive(false);
 
         Debug.Log("MenuCreator started");
@@ -40,7 +41,7 @@ public class MenuCreator : MonoBehaviour
         Debug.Log("Initializing menu");
 
         //The y position on the menu
-        float position = 180;
+        float position = 210;
 
         foreach (string slider in sliders)
         {
@@ -71,6 +72,11 @@ public class MenuCreator : MonoBehaviour
                     Tslider.gameObject.transform.localPosition = new Vector3(Tslider.gameObject.transform.localPosition.x, position, Tslider.gameObject.transform.localPosition.z);
                     position -= 50;
                     break;
+                case "Nslider":
+                    Nslider.gameObject.SetActive(true);
+                    Nslider.gameObject.transform.localPosition = new Vector3(Nslider.gameObject.transform.localPosition.x, position, Nslider.gameObject.transform.localPosition.z);
+                    position -= 50;
+                    break;
                 case "Ptoggle":
                     Ptoggle.gameObject.SetActive(true);
                     Ptoggle.gameObject.transform.localPosition = new Vector3(Ptoggle.gameObject.transform.localPosition.x, position, Ptoggle.gameObject.transform.localPosition.z);
@@ -81,8 +87,9 @@ public class MenuCreator : MonoBehaviour
 
         }
 
+
     }
 
-    
+
 }
 
