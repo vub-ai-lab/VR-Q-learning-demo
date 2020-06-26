@@ -93,55 +93,7 @@ abstract public class GridWorldGUI : MonoBehaviour
         return cone;
     }
 
-    protected void makeWall(int x, int y)
-    {
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        cube.transform.position = tilemap.GetCellCenterWorld(new Vector3Int(x, y, 0)) + new Vector3(0, 2.5f, 0);
-        cube.transform.localScale = new Vector3(2, 5, 1.5f);
-        Material newMat = Resources.Load("wall_A_d", typeof(Material)) as Material;
-        cube.GetComponent<Renderer>().material = newMat;
-    }
-
-    protected GameObject makeChest(int x, int y, char chest_char)
-    {
-        GameObject chest;
-        // Chest type
-        if (chest_char < GridWorld.emptyChestUp)
-            chest = (GameObject)Instantiate(Resources.Load("treasure_chest/treasure_chest"));
-
-        else
-            chest = (GameObject)Instantiate(Resources.Load("treasure_chest/treasure_chest_empty"));
-
-        // Position
-        chest.transform.position = tilemap.GetCellCenterWorld(new Vector3Int(x, y, 0));
-
-        // Rotation
-        Vector3 rot_vec = new Vector3(0, 0, 0);
-        switch (chest_char % 4)
-        {
-            case 0: //right
-                rot_vec = new Vector3(0, 90, 0);
-                break;
-            case 2: //down
-                rot_vec = new Vector3(0, 180, 0);
-                break;
-            case 3: // left
-                rot_vec = new Vector3(0, -90, 0);
-                break;
-        }
-        chest.transform.Rotate(rot_vec);
-
-        return chest;
-    }
-
-    public abstract void moveAgentInGameWorld(Vector2Int from_pos, Vector2Int to_pos, bool teleport = false);
-
-    protected IEnumerator InteractWithChest(GameObject chest)
-    {
-        yield return new WaitForSeconds(0.1f);
-        Animator anim = chest.GetComponent<Animator>();
-        anim.SetBool("open", !anim.GetBool("open"));
-    }
+    public abstract void moveAgentInGameWorld(Vector2Int from_pos, Vector2Int to_pos, bool teleport = false); 
 
     protected void Visualise(object sender, DestinationMarkerEventArgs e)
     {
@@ -166,24 +118,8 @@ abstract public class GridWorldGUI : MonoBehaviour
         }
     }
 
-    protected void VisualiseTraces()
-    {
-        if (showTraces)
-        {
-            for (var y = 0; y < env.gridSizeY; ++y)
-            {
-                for (var x = 0; x < env.gridSizeX; ++x)
-                {
-                    Vector2Int pos = new Vector2Int(x, y);
-                    foreach (Action a in env.getActions(pos))
-                    {
-                        float v = agent.GetTraceValue(pos, a);
-                        trace_cones[x, y][a].transform.localScale = new Vector3(v * 20, v * 20, v * 20);
-                    }
-                }
-            }
-        }
-    }
+    protected abstract void VisualiseTraces();
+
 
     // Because we use this method as a VRTK teleport event we need the given signature
     public void UpdateUI(object sender, DestinationMarkerEventArgs e)
@@ -367,7 +303,7 @@ abstract public class GridWorldGUI : MonoBehaviour
 
     }
 
-    public void ResetPosition()
+    public virtual void ResetPosition()
     {
         env.ResetPosition();
     }

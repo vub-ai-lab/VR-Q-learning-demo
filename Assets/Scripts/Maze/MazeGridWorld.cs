@@ -23,27 +23,27 @@ public class MazeGridWorld : GridWorld {
 				Node current = new Node (x, y);
 				nodes [y].Add (current);
 
-				if (getLabyrinth(x, y) == wallChar)
+				if (GetLabyrinth(x, y) == wallChar)
 					continue;
 					
-				if (getLabyrinth (x, y) == goalChar)
+				if (GetLabyrinth (x, y) == goalChar)
 					GoalState = current;
 				
-				if (getLabyrinth (x,y) == floorChar)
+				if (GetLabyrinth (x,y) == floorChar)
 					startNodes.Add (current);
 				
-				if (getLabyrinth (x, y) == startChar) {
+				if (GetLabyrinth (x, y) == startChar) {
 					currentState = StartState = current;
 					startNodes.Add (current);
 				}
 				if (x > 0) {
-					if (getLabyrinth(x-1, y) != wallChar) {
+					if (GetLabyrinth(x-1, y) != wallChar) {
 						current.addAction (Action.left, nodes [y] [x - 1]);
 						nodes [y] [x - 1].addAction (Action.right, current);
 					}
 				}
 				if (y > 0) {
-					if (getLabyrinth(x, y-1) != wallChar) {
+					if (GetLabyrinth(x, y-1) != wallChar) {
 						current.addAction (Action.down, nodes [y - 1] [x]);
 						nodes [y - 1] [x].addAction (Action.up, current);
 					}

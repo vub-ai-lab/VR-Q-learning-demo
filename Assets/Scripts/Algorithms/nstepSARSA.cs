@@ -24,7 +24,7 @@ public class NstepSARSA : Algorithm
         float delta = blop - q_table[stateToUpdate.x, stateToUpdate.y][actionToUpdate];
         q_table[stateToUpdate.x, stateToUpdate.y][actionToUpdate] += learning_rate * delta;
 
-        traces[stateToUpdate.x, stateToUpdate.y][actionToUpdate] = 0;
+        traces[stateToUpdate.x, stateToUpdate.y][actionToUpdate] = 0.5f;
     }
 
     private float RewardSum(Vector2Int state, Action action)
@@ -48,7 +48,11 @@ public class NstepSARSA : Algorithm
     private void FlushRemaining(Vector2Int finalState, Action action)
     {
 
-        UpdateQTable(finalState, action, false);
+        //Covers edge case when the amount of steps the user takes is smaller than n
+        if(savedStates.Count == 4)
+        {
+            UpdateQTable(finalState, action, false);
+        }
 
         while(savedStates.Count > 0)
         {
@@ -61,7 +65,7 @@ public class NstepSARSA : Algorithm
     public override void UpdateValues(Action action, Vector2Int nextState, float reward, bool terminal)
     {
         
-        //Set to 1 the trace to create a trail of n-steps
+        //Set the trace to 1 to create a trail of n-steps
         traces[lastState.x, lastState.y][action] = 1;
 
         //Push state action and reward on the corresponding queue
@@ -82,6 +86,7 @@ public class NstepSARSA : Algorithm
 
     }
 
+
     public override void Initialize()
     {
 
@@ -96,4 +101,6 @@ public class NstepSARSA : Algorithm
 
 
     }
+
+
 }

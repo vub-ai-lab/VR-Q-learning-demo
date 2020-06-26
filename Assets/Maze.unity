@@ -7416,6 +7416,7 @@ GameObject:
   - component: {fileID: 630170864}
   - component: {fileID: 630170865}
   - component: {fileID: 630170868}
+  - component: {fileID: 630170869}
   - component: {fileID: 630170866}
   - component: {fileID: 630170867}
   m_Layer: 0
@@ -7439,12 +7440,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   qlearningWtraces: {fileID: 630170863}
   sarsa: {fileID: 630170864}
-  expectedSarsa: {fileID: 630170865}
+  expectedSARSA: {fileID: 630170865}
   nstepSARSA: {fileID: 630170868}
+  nstepOpSARSA: {fileID: 630170869}
+  algorithmType: 
   softmax: {fileID: 630170867}
   egreedy: {fileID: 630170866}
-  AlgorithmName: {fileID: 1741389461}
-  PolicyName: {fileID: 1874335445}
+  algorithmName: {fileID: 1741389461}
+  policyName: {fileID: 1874335445}
   env: {fileID: 1773603326}
   envGUI: {fileID: 1773603327}
 --- !u!4 &630170862
@@ -7543,6 +7546,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e68d43f4074c46146947321ccda9c9f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agent: {fileID: 630170861}
+--- !u!114 &630170869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 630170860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d7028401a977a94a94754853db2b8c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 630170861}
@@ -17817,7 +17833,7 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0.9
+  m_Value: 0.2
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:

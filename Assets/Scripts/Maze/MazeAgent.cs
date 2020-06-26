@@ -73,56 +73,6 @@ public class MazeAgent : Agent
         WalkUntilCrossing(Action.right, Action.up, Action.down);
     }
 
-    public override void Start()
-    {
-
-        // Get the algorithm the user selected in the StartMenu
-        algorithmType = UnityEngine.PlayerPrefs.GetString("Algorithm");
-
-        switch (algorithmType)
-        {
-            case "Qlearning":
-                algorithm = qlearningWtraces;
-                AlgorithmName.text = "Qlearning";
-                Debug.Log("LoadedQlearning");
-                break;
-            case "SARSA":
-                algorithm = sarsa;
-                AlgorithmName.text = "SARSA";
-                Debug.Log("Loaded SARSA");
-                break;
-            case "ExpectedSARSA":
-                algorithm = expectedSarsa;
-                AlgorithmName.text = "E. SARSA";
-                Debug.Log("Loaded Expected SARSA");
-                break;
-            case "nstepSARSA":
-                algorithm = nstepSARSA;
-                AlgorithmName.text = "ns SARSA";
-                Debug.Log("Loaded n-step SARSA");
-                break;
-        }
-
-        //Get the policy the user selected in the StartMenu
-        policyType = UnityEngine.PlayerPrefs.GetString("Policy");
-        switch(policyType)
-        {
-            case "Egreedy":
-                policy = egreedy;
-                PolicyName.text = "ε-greedy";
-                Debug.Log("Loaded egreedy");
-                break;
-            case "Softmax":
-                policy = softmax;
-                PolicyName.text = "Softmax";
-                Debug.Log("Loaded softmax");
-                break;
-        }
-
-        algorithm.Initialize();
-    }
-
-
 }
 
 

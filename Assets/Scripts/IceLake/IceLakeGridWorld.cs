@@ -25,39 +25,33 @@ public class IceLakeGridWorld : GridWorld
                 Node current = new Node(x, y);
                 nodes[y].Add(current);
 
-                if (getLake(x, y) == wallChar)
-                    continue;
-
-                if (getLake(x, y) == goalChar)
+                if (GetLake(x, y) == goalChar)
                     GoalState = current;
 
-                if (getLake(x, y) == floorChar)
+                if (GetLake(x, y) == floorChar)
                     startNodes.Add(current);
 
-                if (getLake(x, y) == startChar)
+                if (GetLake(x, y) == startChar)
                 {
                     currentState = StartState = current;
                     startNodes.Add(current);
                 }
 
-                if (getLake(x, y) == holeChar)
+                if (GetLake(x, y) == holeChar)
                     holes.Add(current);
 
                 if (x > 0)
                 {
-                    if (getLake(x - 1, y) != wallChar)
-                    {
-                        current.addAction(Action.left, nodes[y][x - 1]);
-                        nodes[y][x - 1].addAction(Action.right, current);
-                    }
+                    current.addAction(Action.left, nodes[y][x - 1]);
+                    nodes[y][x - 1].addAction(Action.right, current);
+
                 }
                 if (y > 0)
                 {
-                    if (getLake(x, y - 1) != wallChar)
-                    {
-                        current.addAction(Action.down, nodes[y - 1][x]);
-                        nodes[y - 1][x].addAction(Action.up, current);
-                    }
+
+                    current.addAction(Action.down, nodes[y - 1][x]);
+                    nodes[y - 1][x].addAction(Action.up, current);
+
                 }
             }
         }

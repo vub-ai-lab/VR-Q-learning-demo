@@ -12,8 +12,6 @@ public class SARSA : Algorithm
 
 
     // Learning memory
-    private Vector2Int prevState;
-
     private Action prevAction;
 
     private float prevReward;

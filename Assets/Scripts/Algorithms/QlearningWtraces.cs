@@ -11,8 +11,6 @@ public class QlearningWtraces : Algorithm
 {
 
     // Learning memory
-    private Vector2Int prevState;
-
     private Action prevAction;
 
     private float prevReward;
@@ -37,8 +35,9 @@ public class QlearningWtraces : Algorithm
             }
         }
 
+        
         // Check if best action matches with the selected action
-        if(agent.GetPickChance(nextState, secondAction, actions) >= bestAction){
+        if(terminal || agent.GetPickChance(nextState, secondAction, actions) >= bestAction){
             reset = false;
         }
         else
@@ -46,8 +45,7 @@ public class QlearningWtraces : Algorithm
             reset = true;
         }
 
-        Debug.Log("The best action is: " + bestAction);
-        Debug.Log("RESET = " + reset);
+    
 
         for (int x = 0; x < agent.env.gridSizeX; x++)
         {

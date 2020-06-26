@@ -18,9 +18,10 @@ abstract public class Agent : MonoBehaviour
     // Algorithms
     public QlearningWtraces qlearningWtraces;
     public SARSA sarsa;
-    public ExpectedSARSA expectedSarsa;
+    public ExpectedSARSA expectedSARSA;
     public NstepSARSA nstepSARSA;
-    protected String algorithmType;
+    public NstepOpSARSA nstepOpSARSA;
+    public String algorithmType;
     protected Algorithm algorithm;
 
     //Policies
@@ -30,8 +31,8 @@ abstract public class Agent : MonoBehaviour
     protected Policy policy;
 
     //Textfields
-    public Text AlgorithmName;
-    public Text PolicyName;
+    public Text algorithmName;
+    public Text policyName;
 
     //Environment
     public GridWorld env;
@@ -171,7 +172,62 @@ abstract public class Agent : MonoBehaviour
     public abstract void MoveRight();
 
 
-    abstract public void Start();
+    public void Start()
+    {
+
+        // Get the algorithm the user selected in the StartMenu
+        algorithmType = UnityEngine.PlayerPrefs.GetString("Algorithm");
+
+        switch (algorithmType)
+        {
+            case "Qlearning":
+                algorithm = qlearningWtraces;
+                algorithmName.text = "Qlearning";
+                Debug.Log("LoadedQlearning");
+                break;
+            case "SARSA":
+                algorithm = sarsa;
+                algorithmName.text = "SARSA";
+                Debug.Log("Loaded SARSA");
+                break;
+            case "ExpectedSARSA":
+                algorithm = expectedSARSA;
+                algorithmName.text = "E. SARSA";
+                Debug.Log("Loaded Expected SARSA");
+                break;
+            case "nstepSARSA":
+                algorithm = nstepSARSA;
+                algorithmName.text = "N SARSA";
+                Debug.Log("Loaded n-step SARSA");
+                break;
+            case "nstepOpSARSA":
+                algorithm = nstepOpSARSA;
+                algorithmName.text = "Ns op SARSA";
+                algorithmName.fontSize = 20;
+                algorithmName.GetComponent<RectTransform>().sizeDelta = new Vector3(300, 50,0);
+                Debug.Log("Loaded n-step off-policy SARSA");
+                break;
+        }
+
+        //Get the policy the user selected in the StartMenu
+        policyType = UnityEngine.PlayerPrefs.GetString("Policy");
+        switch (policyType)
+        {
+            case "Egreedy":
+                policy = egreedy;
+                policyName.text = "ε-greedy";
+                Debug.Log("Loaded egreedy");
+                break;
+            case "Softmax":
+                policy = softmax;
+                policyName.text = "Softmax";
+                Debug.Log("Loaded softmax");
+                break;
+        }
+
+
+        algorithm.Initialize();
+    }
 
     public void InitializeMenu()
     {

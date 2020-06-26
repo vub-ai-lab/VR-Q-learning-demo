@@ -23,7 +23,7 @@ public class MenuManager : MonoBehaviour
 
         foreach (Panel panel in panels)
         {
-            panel.Setup(this);
+            panel.Setup();
         }
 
         currentPanel.Show();
@@ -58,7 +58,7 @@ public class MenuManager : MonoBehaviour
     public void ToMaze()
     {
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene("main");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Maze");
 
     }
 
@@ -109,11 +109,23 @@ public class MenuManager : MonoBehaviour
         UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepSARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
     }
-    
+
+    public void LoadnStepSarsaSoftmax()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepSARSA");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
+    }
+
 
     public void LoadnStepOffpolicySarsa()
     {
-        UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepOffpolicySARSA");
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepOpSARSA");
         UnityEngine.PlayerPrefs.SetString("Policy", "Egreedy");
+    }
+
+    public void LoadnStepOffpolicySarsaSoftmax()
+    {
+        UnityEngine.PlayerPrefs.SetString("Algorithm", "nstepOpSARSA");
+        UnityEngine.PlayerPrefs.SetString("Policy", "Softmax");
     }
 }

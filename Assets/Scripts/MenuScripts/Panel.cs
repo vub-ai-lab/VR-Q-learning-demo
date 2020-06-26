@@ -7,15 +7,13 @@ using UnityEngine;
 public class Panel : MonoBehaviour
 {
    private Canvas canvas = null;
-   private MenuManager menuMangager = null;
 
    private void Awake(){
        canvas = GetComponent<Canvas>();
    }
 
-   public void Setup(MenuManager menuMangager){
+   public void Setup(){
 
-       this.menuMangager = menuMangager;
        Hide();
        
    }

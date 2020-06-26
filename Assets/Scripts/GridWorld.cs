@@ -50,13 +50,13 @@ abstract public class GridWorld : MonoBehaviour
         "s..p."
     };
 
-    public char getLabyrinth(int x, int y)
+    public char GetLabyrinth(int x, int y)
     {
         var labY = gridSizeY - y - 1;
         return labyrinth[labY][x];
     }
 
-    public char getLake(int x, int y)
+    public char GetLake(int x, int y)
     {
         var lakeY = gridSizeY - y - 1;
         return lake[lakeY][x];
@@ -234,7 +234,6 @@ abstract public class GridWorld : MonoBehaviour
                     break;
             }
 
-            Debug.Log("REMAINDER:" + remainder);
             if(remainder > 2)
             {
                 steps = rnd.Next(2);

@@ -14,12 +14,8 @@ public class Softmax : Policy
 
         foreach (Action action in actions)
         {
-            Debug.Log(action);
             allStateSum += (float)Math.Pow(Math.E, q_table[action] / scaledTemperature);
         }
-
-        //Debug.Log("Teller: " + Math.Pow(Math.E, q_table[state.x, state.y][selectedAction]));
-        //Debug.Log("Noemer: " + nextStateSum);
 
         return (float)Math.Pow(Math.E, q_table[selectedAction] / scaledTemperature) / allStateSum;
 
@@ -29,13 +25,13 @@ public class Softmax : Policy
     {
         string[] sliders;
 
-        if (algorithm == "nstepSARSA")
+        if (algorithm == "nstepSARSA" || algorithm == "nstepOpSARSA")
         {
-            sliders = new string[] { "LRslider", "DFslider", "TDslider", "Eslider", "Nslider", "Ptoggle" };
+            sliders = new string[] { "LRslider", "DFslider", "TDslider", "Tslider", "Nslider", "Ptoggle" };
         }
         else
         {
-            sliders = new string[] { "LRslider", "DFslider", "TDslider", "Eslider", "Ptoggle" };
+            sliders = new string[] { "LRslider", "DFslider", "TDslider", "Tslider", "Ptoggle" };
         }
 
         menu.InitializeMenu(sliders);

@@ -14,7 +14,7 @@ abstract public class Algorithm : MonoBehaviour
     // Algorithm parameters
     // These are adjustable in a GUI menu
     [Range(0f, 1f)]
-    protected float learning_rate = 0.9f; // The rate at which to update the value estimates given a reward.
+    protected float learning_rate = 0.2f; // The rate at which to update the value estimates given a reward.
     [Range(0f, 1f)]
     protected float discount_factor = 0.9f; // Discount factor for calculating Q-target.
     [Range(0f, 1f)]
@@ -28,15 +28,12 @@ abstract public class Algorithm : MonoBehaviour
 
     // Learning Memory
     protected Vector2Int lastState;
+    protected Vector2Int prevState;
     public Dictionary<Action, float>[,] q_table;   // The matrix containing the q-value estimates.
     protected Dictionary<Action, float>[,] traces;  // Matrix containing the eligibility traces
 
     // Environment
     public Agent agent;
-    //protected GridWorld env;
-   // protected GridWorldGUI envGUI;
-
-
 
     public Vector2Int LastState
     {
@@ -216,14 +213,16 @@ abstract public class Algorithm : MonoBehaviour
         ClearTraces();
         agent.envGUI.ResetEpisode();
         lastState = agent.env.getCurrentState();
+        prevState.Set(-1, -1);
         agent.envGUI.moveAgentInGameWorld(lastState, lastState, true);
     }
 
     public void ResetPosition()
     {
-        ClearTraces();
         agent.envGUI.ResetPosition();
+        ClearTraces();
         lastState = agent.env.getCurrentState();
+        prevState.Set(-1, -1);
         agent.envGUI.moveAgentInGameWorld(lastState, lastState, true);
     }
 

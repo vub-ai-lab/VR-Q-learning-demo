@@ -8,6 +8,74 @@ using VRTK;
 
 public class IceLakeGridWorldGUI : GridWorldGUI
 {
+
+    public Tile brokenIce;
+    public Tile normalIce;
+
+    protected override void VisualiseTraces()
+    {
+        if (showTraces)
+        {
+
+            for (var y = 0; y < env.gridSizeY; ++y)
+            {
+                for (var x = 0; x < env.gridSizeX; ++x)
+                {
+                    Vector2Int pos = new Vector2Int(x, y);
+                    foreach (Action a in env.getActions(pos))
+                    {
+
+                        float v = agent.GetTraceValue(pos, a);
+
+                        if (agent.algorithmType == "nstepSARSA" || agent.algorithmType == "nstepOpSARSA")
+                        {
+                            Vector3Int position = new Vector3Int(x, y, 0);
+
+                            if (v == 1)
+                            {
+                                tilemap.SetTile(position, brokenIce);
+                            }
+                            else if(v == 0.5)
+                            {
+                                tilemap.SetTile(position, normalIce);
+                                v = 0;
+                            }
+
+                        }
+
+                        
+                        trace_cones[x, y][a].transform.localScale = new Vector3(v * 20, v * 20, v * 20);
+                        
+                    }
+                }
+            }
+        }
+    }
+
+    protected void CleanIce()
+    {
+
+        for (var y = 0; y < env.gridSizeY; ++y)
+        {
+            for (var x = 0; x < env.gridSizeX; ++x)
+            {
+                Vector2Int pos = new Vector2Int(x, y);
+                foreach (Action a in env.getActions(pos))
+                {
+                    float v = agent.GetTraceValue(pos, a);
+
+                    if (v == 1)
+                    {
+                        //Debug.Log("CLEANED ICE" + x + " , " + y);
+                        Vector3Int position = new Vector3Int(x, y, 0);
+                        tilemap.SetTile(position, normalIce);
+                    }
+
+                }
+            }
+        }
+    }
+
     protected override void InitGridGUI()
     {
         for (var y = 0; y < env.gridSizeY; ++y)
@@ -88,6 +156,12 @@ public class IceLakeGridWorldGUI : GridWorldGUI
         teleporter.Teleported -= UpdateUI;
         teleporter.Teleported -= Visualise;
         teleporter.Teleported -= ReEnableControllers;
+    }
+
+    public override void ResetPosition()
+    {
+        CleanIce();
+        env.ResetPosition();
     }
 
 }

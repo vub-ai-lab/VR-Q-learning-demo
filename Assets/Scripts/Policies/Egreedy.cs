@@ -44,7 +44,7 @@ public class Egreedy : Policy
     {
         string[] sliders;
 
-        if(algorithm == "nstepSARSA")
+        if(algorithm == "nstepSARSA" || algorithm == "nstepOpSARSA")
         {
             sliders = new string[] { "LRslider", "DFslider", "TDslider", "Eslider", "Nslider", "Ptoggle" };
         } else
