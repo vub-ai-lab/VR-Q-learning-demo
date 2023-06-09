@@ -7,6 +7,6 @@
 
 ## License
 
-Code released under the [MIT License].
+Code released under the GPL 3.0 License.
 
 [SteamVR Plugin]: https://www.assetstore.unity3d.com/en/#!/content/32647
