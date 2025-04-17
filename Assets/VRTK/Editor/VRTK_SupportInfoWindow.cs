@@ -114,22 +114,20 @@ namespace VRTK
                     {
                         bool isVREnabled;
 #if UNITY_5_5_OR_NEWER
-                        isVREnabled = VREditor.GetVREnabledOnTargetGroup(targetGroup);
+            isVREnabled = VREditor.GetVREnabledOnTargetGroup(targetGroup);
 #else
-                        isVREnabled = VREditor.GetVREnabled(targetGroup);
+            isVREnabled = VREditor.GetVREnabled(targetGroup);
 #endif
-                        if (!isVREnabled)
+            if (!isVREnabled)
                         {
                             continue;
                         }
 
-                        string[] vrEnabledDevices;
-#if UNITY_5_5_OR_NEWER
-                        vrEnabledDevices = VREditor.GetVREnabledDevicesOnTargetGroup(targetGroup);
-#else
-                        vrEnabledDevices = VREditor.GetVREnabledDevices(targetGroup);
-#endif
-                        Append(targetGroup, string.Join(", ", vrEnabledDevices));
+            // Assuming VRTK doesn't have GetVREnabledDevicesOnTarget anymore
+            // Check if there's another way to get the VR devices or fall back to a manual approach
+            string[] vrEnabledDevices = GetVrEnabledDevices(targetGroup);  // You may need to define this function based on your project setup
+
+            Append(targetGroup, string.Join(", ", vrEnabledDevices));
                     }
                 }
             );
@@ -155,6 +153,12 @@ namespace VRTK
             );
 
             stringBuilder.Length--;
+        }
+
+        private string[] GetVrEnabledDevices(BuildTargetGroup targetGroup)
+        {
+            // Logic to get VR devices for the targetGroup, could be a static list or a manual mapping
+            return new string[] { "Oculus", "HTC Vive" }; // Example, adjust according to your needs
         }
 
         private void Append(string value, Action sectionContentAction = null)

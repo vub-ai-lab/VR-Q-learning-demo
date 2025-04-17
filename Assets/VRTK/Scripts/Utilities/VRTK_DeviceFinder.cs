@@ -2,7 +2,8 @@
 namespace VRTK
 {
     using UnityEngine;
-    using UnityEngine.VR;
+    using UnityEngine.XR;
+    using System.Collections.Generic;
 
     /// <summary>
     /// The Device Finder offers a collection of static methods that can be called to find common game devices such as the headset or controllers, or used to determine key information about the connected devices.
@@ -382,7 +383,7 @@ namespace VRTK
         public static Headsets GetHeadsetType(bool summary = false)
         {
             Headsets returnValue = Headsets.Unknown;
-            cachedHeadsetType = (cachedHeadsetType == "" ? UnityEngine.XR.XRDevice.model.Replace(" ", "").Replace(".", "").ToLowerInvariant() : cachedHeadsetType);
+            cachedHeadsetType = string.IsNullOrEmpty(cachedHeadsetType) ? GetHeadsetModel() : cachedHeadsetType;
             switch (cachedHeadsetType)
             {
                 case "oculusriftcv1":
@@ -418,6 +419,22 @@ namespace VRTK
             }
 
             return returnValue;
+        }
+
+        private static string GetHeadsetModel()
+        {
+            var inputDevices = new List<InputDevice>();
+            InputDevices.GetDevices(inputDevices);
+
+            foreach (var device in inputDevices)
+            {
+                if (device.characteristics.HasFlag(InputDeviceCharacteristics.HeadMounted))
+                {
+                    return device.name.Replace(" ", "").Replace(".", "").ToLowerInvariant();
+                }
+            }
+
+            return "unknown";
         }
 
         /// <summary>

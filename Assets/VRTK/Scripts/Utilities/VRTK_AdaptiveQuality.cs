@@ -14,7 +14,7 @@ namespace VRTK
     using System.Linq;
     using System.Text;
     using UnityEngine;
-    using UnityEngine.VR;
+    using UnityEngine.XR;
 
     /// <summary>
     /// Adaptive Quality dynamically changes rendering settings to maintain VR framerate while maximizing GPU utilization.

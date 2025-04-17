@@ -2,7 +2,7 @@
 namespace VRTK
 {
     using UnityEngine;
-    using UnityEngine.VR;
+    using UnityEngine.XR;
 #if UNITY_EDITOR
     using UnityEditor;
     using UnityEditor.Callbacks;
@@ -672,7 +672,7 @@ namespace VRTK
                 // The loaded VR Device is actually a VR Device
                 UnityEngine.XR.XRSettings.enabled = true;
 
-                if (!UnityEngine.XR.XRDevice.isPresent)
+                if (!IsXRDeviceRunning())
                 {
                     // Despite being loaded, the loaded VR Device isn't working correctly
                     int nextSetupIndex = Array.IndexOf(sdkSetups, loadedSetup) + 1;
@@ -707,6 +707,22 @@ namespace VRTK
             loadedSetup.OnLoaded(this);
             ToggleBehaviours(true);
             OnLoadedSetupChanged(new LoadedSetupChangeEventArgs(previousLoadedSetup, loadedSetup, null));
+        }
+
+        private static bool IsXRDeviceRunning()
+        {
+            var displaySubsystems = new List<XRDisplaySubsystem>();
+            SubsystemManager.GetSubsystems(displaySubsystems);
+
+            foreach (var subsystem in displaySubsystems)
+            {
+                if (subsystem.running)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void ToggleBehaviours(bool state)

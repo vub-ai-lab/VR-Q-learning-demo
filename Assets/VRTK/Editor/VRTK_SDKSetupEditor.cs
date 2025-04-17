@@ -2,7 +2,7 @@
 {
     using UnityEngine;
     using UnityEngine.SceneManagement;
-    using UnityEngine.VR;
+    using UnityEngine.XR;
     using UnityEditor;
     using UnityEditor.SceneManagement;
     using System;
@@ -432,7 +432,7 @@
 
             private static void FixOpenAndUnsavedScenes()
             {
-                for (int index = 0; index < EditorSceneManager.loadedSceneCount; index++)
+                for (int index = 0; index < SceneManager.loadedSceneCount; index++)
                 {
                     Scene scene = SceneManager.GetSceneAt(index);
                     if (scene.isLoaded && scene.isDirty)
