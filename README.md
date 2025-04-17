@@ -110,7 +110,7 @@ Triggered manually (to be implemented).
 
 | Component     | Version     |
 |---------------|-------------|
-| Unity         | `2019.4.40f1` |
+| Unity         | `6000.0.42f1` |
 | SteamVR       | `v1.2.3` (deprecated) |
 | VRTK          | `v3.x` |
 
