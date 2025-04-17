@@ -193,7 +193,7 @@ namespace VRTK
             sliderRigidbody.isKinematic = false;
             sliderRigidbody.useGravity = false;
             sliderRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
-            sliderRigidbody.drag = releasedFriction;
+            sliderRigidbody.linearDamping = releasedFriction;
 
             if (connectedTo)
             {

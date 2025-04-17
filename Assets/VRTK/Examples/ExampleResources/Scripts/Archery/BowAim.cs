@@ -129,7 +129,7 @@
                 }
             }
             currentArrow.GetComponent<Rigidbody>().isKinematic = false;
-            currentArrow.GetComponent<Rigidbody>().velocity = currentPull * powerMultiplier * currentArrow.transform.TransformDirection(Vector3.forward);
+            currentArrow.GetComponent<Rigidbody>().linearVelocity = currentPull * powerMultiplier * currentArrow.transform.TransformDirection(Vector3.forward);
             currentArrow.GetComponent<Arrow>().inFlight = true;
             currentArrow = null;
             currentPull = 0;

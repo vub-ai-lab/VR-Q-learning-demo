@@ -546,7 +546,7 @@ namespace VRTK
         {
             if (interactableRigidbody)
             {
-                interactableRigidbody.velocity = Vector3.zero;
+                interactableRigidbody.linearVelocity = Vector3.zero;
                 interactableRigidbody.angularVelocity = Vector3.zero;
             }
         }

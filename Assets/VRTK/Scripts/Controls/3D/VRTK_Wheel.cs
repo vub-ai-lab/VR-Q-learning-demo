@@ -110,7 +110,7 @@ namespace VRTK
             if (wheelRigidbody == null)
             {
                 wheelRigidbody = gameObject.AddComponent<Rigidbody>();
-                wheelRigidbody.angularDrag = releasedFriction;
+                wheelRigidbody.angularDamping = releasedFriction;
             }
             wheelRigidbody.isKinematic = false;
             wheelRigidbody.useGravity = false;
@@ -225,13 +225,13 @@ namespace VRTK
 
         protected virtual void WheelInteractableObjectGrabbed(object sender, InteractableObjectEventArgs e)
         {
-            wheelRigidbody.angularDrag = grabbedFriction;
+            wheelRigidbody.angularDamping = grabbedFriction;
             wheelHinge.useSpring = false;
         }
 
         protected virtual void WheelInteractableObjectUngrabbed(object sender, InteractableObjectEventArgs e)
         {
-            wheelRigidbody.angularDrag = releasedFriction;
+            wheelRigidbody.angularDamping = releasedFriction;
             if (snapToStep)
             {
                 wheelHinge.useSpring = true;

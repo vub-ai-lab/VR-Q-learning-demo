@@ -114,7 +114,7 @@ namespace VRTK
             {
                 leverRigidbody = gameObject.AddComponent<Rigidbody>();
                 leverRigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-                leverRigidbody.angularDrag = releasedFriction; // otherwise lever will continue to move too far on its own
+                leverRigidbody.angularDamping = releasedFriction; // otherwise lever will continue to move too far on its own
             }
             leverRigidbody.isKinematic = false;
             leverRigidbody.useGravity = false;
@@ -139,12 +139,12 @@ namespace VRTK
 
         protected virtual void InteractableObjectGrabbed(object sender, InteractableObjectEventArgs e)
         {
-            leverRigidbody.angularDrag = grabbedFriction;
+            leverRigidbody.angularDamping = grabbedFriction;
         }
 
         protected virtual void InteractableObjectUngrabbed(object sender, InteractableObjectEventArgs e)
         {
-            leverRigidbody.angularDrag = releasedFriction;
+            leverRigidbody.angularDamping = releasedFriction;
         }
 
         protected virtual void InitHingeJoint()

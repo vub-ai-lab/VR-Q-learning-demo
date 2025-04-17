@@ -110,11 +110,11 @@ namespace VRTK.GrabAttachMechanics
             }
 
             Vector3 velocityTarget = positionDelta / Time.fixedDeltaTime;
-            Vector3 calculatedVelocity = Vector3.MoveTowards(grabbedObjectRigidBody.velocity, velocityTarget, maxDistanceDelta);
+            Vector3 calculatedVelocity = Vector3.MoveTowards(grabbedObjectRigidBody.linearVelocity, velocityTarget, maxDistanceDelta);
 
             if (velocityLimit == float.PositiveInfinity || calculatedVelocity.sqrMagnitude < velocityLimit)
             {
-                grabbedObjectRigidBody.velocity = calculatedVelocity;
+                grabbedObjectRigidBody.linearVelocity = calculatedVelocity;
             }
         }
 

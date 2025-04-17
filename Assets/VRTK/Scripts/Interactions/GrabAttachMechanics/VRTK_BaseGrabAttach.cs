@@ -219,12 +219,12 @@ namespace VRTK.GrabAttachMechanics
 
                         if (origin != null)
                         {
-                            objectRigidbody.velocity = origin.TransformVector(velocity) * (grabbingObjectThrowMultiplier * throwMultiplier);
+                            objectRigidbody.linearVelocity = origin.TransformVector(velocity) * (grabbingObjectThrowMultiplier * throwMultiplier);
                             objectRigidbody.angularVelocity = origin.TransformDirection(angularVelocity);
                         }
                         else
                         {
-                            objectRigidbody.velocity = velocity * (grabbingObjectThrowMultiplier * throwMultiplier);
+                            objectRigidbody.linearVelocity = velocity * (grabbingObjectThrowMultiplier * throwMultiplier);
                             objectRigidbody.angularVelocity = angularVelocity;
                         }
 
@@ -234,11 +234,11 @@ namespace VRTK.GrabAttachMechanics
                             if (rigidbodyCollider != null)
                             {
                                 Vector3 collisionCenter = rigidbodyCollider.bounds.center;
-                                objectRigidbody.velocity = objectRigidbody.GetPointVelocity(collisionCenter + (collisionCenter - transform.position));
+                                objectRigidbody.linearVelocity = objectRigidbody.GetPointVelocity(collisionCenter + (collisionCenter - transform.position));
                             }
                             else
                             {
-                                objectRigidbody.velocity = objectRigidbody.GetPointVelocity(objectRigidbody.position + (objectRigidbody.position - transform.position));
+                                objectRigidbody.linearVelocity = objectRigidbody.GetPointVelocity(objectRigidbody.position + (objectRigidbody.position - transform.position));
                             }
                         }
                     }

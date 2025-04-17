@@ -108,7 +108,7 @@ namespace VRTK
             if (knobRigidbody == null)
             {
                 knobRigidbody = gameObject.AddComponent<Rigidbody>();
-                knobRigidbody.angularDrag = 10; // otherwise knob will continue to move too far on its own
+                knobRigidbody.angularDamping = 10; // otherwise knob will continue to move too far on its own
             }
             knobRigidbody.isKinematic = false;
             knobRigidbody.useGravity = false;

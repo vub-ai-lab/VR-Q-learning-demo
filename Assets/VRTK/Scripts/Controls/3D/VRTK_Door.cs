@@ -391,7 +391,7 @@ namespace VRTK
             {
                 frameRigidbody = frame.AddComponent<Rigidbody>();
                 frameRigidbody.isKinematic = true; // otherwise frame moves/falls over when door is moved or fully open
-                frameRigidbody.angularDrag = releasedFriction; // in case this is a nested door
+                frameRigidbody.angularDamping = releasedFriction; // in case this is a nested door
             }
         }
 
@@ -404,7 +404,7 @@ namespace VRTK
             if (doorRigidbody == null)
             {
                 doorRigidbody = actualDoor.AddComponent<Rigidbody>();
-                doorRigidbody.angularDrag = releasedFriction;
+                doorRigidbody.angularDamping = releasedFriction;
             }
             doorRigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; // otherwise door will not react to fast moving controller
             doorRigidbody.isKinematic = false; // in case nested door as already created this
@@ -483,12 +483,12 @@ namespace VRTK
 
         protected virtual void InteractableObjectGrabbed(object sender, InteractableObjectEventArgs e)
         {
-            doorRigidbody.angularDrag = grabbedFriction;
+            doorRigidbody.angularDamping = grabbedFriction;
         }
 
         protected virtual void InteractableObjectUngrabbed(object sender, InteractableObjectEventArgs e)
         {
-            doorRigidbody.angularDrag = releasedFriction;
+            doorRigidbody.angularDamping = releasedFriction;
         }
 
         protected virtual float CalculateValue()
